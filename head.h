@@ -55,7 +55,7 @@ void help(void);
 void cd(void);
 void dir(void);
 void mkdir(void);
-void creat(void);
+void touch(void);//
 void open(void);
 void read(void);
 void write(void);
