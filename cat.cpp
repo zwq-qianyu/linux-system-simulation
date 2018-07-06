@@ -3,11 +3,15 @@ int argc;		// 用户命令的参数个数
 char *argv[5];		// 用户命令的参数
 Inode inode_array[INODENUM];	// i节点数组
 char temp[2 * BLKSIZE];	// 缓冲区
-File_table file_array[FILENUM];	// 打开文件表数组
+
+int main(){
+	cat();
+	return 0;
+}
  
 void cat(){
 	/*功能: 打开并查看当前目录下的文件(open file1)*/
-	int i, inum, mode, filenum, chk;
+	int i, inum, chk;
 	if (argc != 2){         //若没有输入要操作的文件或目录对象，直接退出 
 		printf("command open must have one object. \n");
 		return;
@@ -29,26 +33,10 @@ void cat(){
 		printf("This file is not yours !\n");
 		return;
 	}
-	//初始化时 file_array[i].inum都为-1<0，找到第一个 未使用的打开文件表的编号 ，判断文件表是否使用完毕 
-	for (i = 0; i < FILENUM; i++)
-		if (file_array[i].inum < 0)           
-			break;
-	if (i == FILENUM)      //如果打开文件表数量超过最大打开文件表数量 ，报错 
-	{
-		printf("The file table is full, please close some file.\n");
-		return;
-	}
-	filenum = i;
-	file_array[filenum].inum = inum;          //将文件的i节点号赋给打开文件表的i节点号 
-	strcpy(file_array[filenum].file_name, inode_array[inum].file_name);   //将文件的文件名赋给打开文件表的文件名
-	file_array[filenum].mode = 1;           //cat只读 
-	file_array[filenum].offset = 0;
-	
 	if (inode_array[inum].length > 0){
-		read_blk(inum);
+		read_blk(inum);                 //将i节点号为inum的文件读入temp缓存
 		for (i = 0; temp[i] != '\0'; i++)    //读取空格之前的所有内容 
 			printf("%c", temp[i]);
 		printf("\n");
 	}
-	
 } 
