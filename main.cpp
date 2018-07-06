@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "head.h"
 char		choice;
 int		argc;		// 用户命令的参数个数
