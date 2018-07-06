@@ -3,11 +3,6 @@ int argc;		// 用户命令的参数个数
 char *argv[5];		// 用户命令的参数
 Inode inode_array[INODENUM];	// i节点数组
 char temp[2 * BLKSIZE];	// 缓冲区
-
-int main(){
-	cat();
-	return 0;
-}
  
 void cat(){
 	/*功能: 打开并查看当前目录下的文件(open file1)*/
