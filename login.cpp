@@ -2,8 +2,13 @@
 FILE *fp;	 // 打开文件指针
 User user;		// 当前的用户
 char temp[2 * BLKSIZE];	// 缓冲区
+
+int main(){
+	login();
+	return 0;
+}
  
-void login(void){
+void login(){
 	/*功能: 用户登陆，如果是新用户则创建用户*/
 	char *p;
 	int  flag;
@@ -56,7 +61,7 @@ void login(void){
 	if (flag == 0){
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		//-------------------------------gets(temp);
+		gets(temp);
 		if ((choice == 'y') || (choice == 'Y')){
 			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
