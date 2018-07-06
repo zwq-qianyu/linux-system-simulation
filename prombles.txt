@@ -1,1 +1,1 @@
-1. login.cpp 中 line 64 的 gets(temp);
+1. login.cpp 中 line 64 的 `gets(temp);` , line 37 的`format();`     //黄春伟负责这个模块
