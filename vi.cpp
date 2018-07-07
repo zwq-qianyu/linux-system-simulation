@@ -1,3 +1,10 @@
+#include "head.h"
+int argc;		// 用户命令的参数个数
+char *argv[5];		// 用户命令的参数
+Inode inode_array[INODENUM];	// i节点数组
+File_table file_array[FILENUM];	// 打开文件表数组
+char temp[2 * BLKSIZE];	// 缓冲区
+
 void vi(){
 	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
