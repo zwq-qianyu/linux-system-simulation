@@ -2,7 +2,7 @@
 
 2. 添加了一条新的命令：sudo   ---  switch the user \n\
 
-3. 删除 logout 函数，改用sudo 切换用户
+3. 删除 logout 函数，改用 sudo 切换用户
 
 4. creat 函数有错误，当前目录下有一个 a.txt 的文件和一个 www 的目录，创建 b.txt 时提示 This file is exsit. ，但是改为创建 b.cpp 就成功了。
 
