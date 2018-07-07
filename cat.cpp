@@ -9,7 +9,7 @@ void cat(){
 	/*功能: 从文件中读出字符(read file1)*/
 	int i, start, num, inum;
 	if (argc != 2){
-		printf("command read must have one object. \n");
+		printf("command cat must have one object. \n");
 		return;
 	}
 	open(1,argv[1]);
