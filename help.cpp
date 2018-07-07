@@ -18,6 +18,6 @@ void help(){
 	rm     ---  delete a exist file \n\
 	rm -r  ---  delete a directory \n\
 	format ---  format a exist filesystem \n\
-	sudo   ---  switch user \n\
+	su     ---  switch current user \n\
 	exit   ---  exit this system \n");
 }
