@@ -1,3 +1,6 @@
+#include "head.h"
+File_table file_array[FILENUM];	// 打开文件表数组
+
 void close(char *argv1){
 	/*功能: 关闭已经打开的文件(close file1)*/
 	int i;
