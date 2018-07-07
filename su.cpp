@@ -54,7 +54,7 @@ void su(){
 		}
 		if (flag == 0){
 			printf("\nThis user is not exist.\n");
-			break;    //用户不存在，先跳出循环创建新用户 
+			break;    //用户不存在，直接跳出循环，进行下一条指令的输入 
 		} 
 	}while(flag);
 }
