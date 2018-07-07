@@ -1,5 +1,5 @@
 #include "head.h"
-char		choice;
+char choice;
 int		argc;		// 用户命令的参数个数
 char		*argv[5];		// 用户命令的参数
 int		inum_cur;		// 当前目录
@@ -21,7 +21,7 @@ void format(void)
 	printf("WARNING:ALL DATA ON THIS FILESYSTEM WILL BE LOST!\n");
 	printf("Proceed with Format(Y/N)?");
 	scanf("%c", &choice);
-	gets_s(temp);
+	//gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		if ((fp = fopen(image_name, "w+b")) == NULL)
@@ -68,7 +68,7 @@ void login(void)
 	do
 	{
 		printf("login:");
-		gets_s(user_name);
+		gets(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch())
@@ -116,7 +116,7 @@ void login(void)
 	{
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		gets_s(temp);
+		//gets(temp);
 		if ((choice == 'y') || (choice == 'Y'))
 		{
 			strcpy(user.user_name, user_name);
@@ -520,7 +520,7 @@ void open()
 	}
 	printf("Please input open mode:(1: read, 2: write, 3: read and write):");
 	scanf("%d", &mode);
-	gets_s(temp);
+	gets(temp);
 	if ((mode < 1) || (mode > 3))
 	{
 		printf("Open mode is wrong.\n");
@@ -572,7 +572,7 @@ void read()
 	{
 		printf("The start position:");
 		scanf("%d", &start);
-		gets_s(temp);
+		gets(temp);
 		if ((start<0) || (start >= inode_array[inum].length))
 		{
 			printf("Start position is wrong.\n");
@@ -580,7 +580,7 @@ void read()
 		}
 		printf("The bytes you want to read:");
 		scanf("%d", &num);
-		gets_s(temp);
+		gets(temp);
 		if (num <= 0)
 		{
 			printf("The num you want to read is wrong.\n");
@@ -620,7 +620,7 @@ void write()
 	{
 		printf("The length you want to write(0-1024):");
 		scanf("%d", &length);
-		gets_s(temp);
+		gets(temp);
 		if ((length < 0) && (length >1024))
 		{
 			printf("Input wrong.\n");
@@ -632,7 +632,7 @@ void write()
 			inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
 		printf("Input the data(Enter to end):\n");
-		gets_s(temp);
+		gets(temp);
 		write_blk(inum);
 	}
 	else
@@ -720,7 +720,7 @@ void logout()
 	char choice;
 	printf("Do you want to exit this user(y/n)?");
 	scanf("%c", &choice);
-	gets_s(temp);
+	//gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		printf("\nCurrent user exited!\nPlease to login by other user!\n");
@@ -745,7 +745,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets_s(temp);
+	//gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(0);
 }
@@ -770,7 +770,7 @@ void command(void)
 	do
 	{
 		pathset();
-		gets_s(cmd);
+		gets(cmd);
 		switch (analyse(cmd))
 		{
 		case 0:
@@ -837,4 +837,3 @@ int main(void)
 	command();
 	return 0;
 }
-
