@@ -54,7 +54,10 @@ void login(){
 				break;
 			} 
 		}
-		if (flag == 0) break;    //用户不存在，先跳出循环创建新用户 
+		if (flag == 0){
+			printf("\nThis user is not exist.\n");
+			break;    //用户不存在，先跳出循环创建新用户 
+		} 
 	} while (flag);
 	
 	// 创建新用户
