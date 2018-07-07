@@ -9,7 +9,7 @@ void vi(){
 	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
 	if (argc != 2){
-		printf("Command write must have one args. \n");
+		printf("Command vi must have one args. \n");
 		return;
 	}
 	open(3, argv[1]);
