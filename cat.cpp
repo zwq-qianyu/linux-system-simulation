@@ -1,3 +1,10 @@
+#include "head.h"
+int argc;		// 用户命令的参数个数
+char *argv[5];		// 用户命令的参数
+Inode inode_array[INODENUM];	// i节点数组
+char temp[2 * BLKSIZE];	// 缓冲区
+File_table file_array[FILENUM];	// 打开文件表数组
+
 void cat(){
 	/*功能: 从文件中读出字符(read file1)*/
 	int i, start, num, inum;
