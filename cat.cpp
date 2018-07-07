@@ -1,4 +1,4 @@
-void read(){
+void cat(){
 	/*功能: 从文件中读出字符(read file1)*/
 	int i, start, num, inum;
 	if (argc != 2){
