@@ -57,14 +57,14 @@ void login(){
 		if (flag == 0){
 			printf("\nThis user is not exist.\n");
 			break;    //用户不存在，先跳出循环创建新用户 
-		} 
+		}  
 	} while (flag);
 	
 	// 创建新用户
 	if (flag == 0){
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		gets(temp);
+		//gets(temp);
 		if ((choice == 'y') || (choice == 'Y')){
 			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
