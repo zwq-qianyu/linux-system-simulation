@@ -1,6 +1,6 @@
 1. login.cpp 中 line 64 的 `gets(temp);` , line 37 的`format();`     //黄春伟负责这个模块
 
-2. 添加了一条新的命令：sudo   ---  switch the user \n\
+2. 添加了一条新的命令：su   ---  switch the user \n\               (已添加su函数，该问题解决)
 
 3. 删除 logout 函数，改用 sudo 切换用户
 
