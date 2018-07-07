@@ -1,4 +1,4 @@
-void write(){
+void vi(){
 	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
 	if (argc != 2){
