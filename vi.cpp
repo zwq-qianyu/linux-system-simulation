@@ -9,7 +9,7 @@ void vi(){
 	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
 	if (argc != 2){
-		printf("Command vi must have one args. \n");
+		printf("Command write must have one args. \n");
 		return;
 	}
 	open(3, argv[1]);
@@ -23,8 +23,21 @@ void vi(){
 		inode_array[inum].address[0] = get_blknum();    //一次分配只有512B的空间，所以调用2次get_blknum()获取1024B空间
 		inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
-		printf("Input the data(Enter to end):\n");
-		gets(temp);
+		/*printf("Input the data(Enter to end):\n");
+		gets(temp);*/
+		printf("Input the data(End by #):\n");
+		char c;
+		char *m;
+		string str;
+		while((c=getchar())!='#'){
+			if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
+				c = '\0'; //将输入的回车键转换成空格
+			}
+			str = str + gets(m) +"\n";	
+		}
+		for(int i=0;i<1024;i++){
+			temp[i] = str[i];
+		}
 		write_blk(inum);
 	}
 	else
