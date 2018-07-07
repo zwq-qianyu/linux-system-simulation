@@ -1,3 +1,7 @@
+#include "head.h"
+Inode inode_array[INODENUM];	// i节点数组
+File_table file_array[FILENUM];	// 打开文件表数组
+
 void open(int mymode, char *argv1){
 	/*功能: 打开当前目录下的文件(open file1)*/
 	int i, inum, mode, filenum, chk;
