@@ -291,7 +291,7 @@ int analyse()
 				printf("%c", 8);
 				printf(" ");
 				printf("%c", 8);
-				s.pop_back();
+				s.substr(0, s.length()-1);
 			}
 		}
 		else if (ch == 13) {		//回车
