@@ -1,7 +1,8 @@
+#include "stdafx.h"
 #include "head.h"
-char choice;
-int		argc;		// 用户命令的参数个数
-char		*argv[5];		// 用户命令的参数
+char		choice;
+vector<string>vc_of_str;
+string  s1, s2;
 int		inum_cur;		// 当前目录
 char		temp[2 * BLKSIZE];	// 缓冲区
 User		user;		// 当前的用户
@@ -11,6 +12,68 @@ File_table file_array[FILENUM];	// 打开文件表数组
 char	image_name[10] = "hd.dat";	// 文件系统名称
 FILE		*fp;					// 打开文件指针
 
+// "help", "cd", "dir", "mkdir", "creat", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
+const string Commands[] = { "man", "cd", "ls", "mkdir", "creat", "open","read", "write", "close", "rmfile", "sudo", "clear", "format","df","rmdir" };
+
+int readby() {	//根据当前目录和第二个参数确定转过去的目录
+	int result_cur = 0; string s = s2;
+	if (s2.length() == 0) {
+		return -1;
+	}
+	if (s2 == "/")return 0;
+	int temp_cur = 0;
+	vector<string>v;
+	while (s.find('/') != -1) {
+		v.push_back(s.substr(0, s.find_first_of('/')));
+		s = s.substr(s.find_first_of('/') + 1);
+	}
+	v.push_back(s);
+	if (v[0].length() == 0) {
+		temp_cur = 0;
+	}
+	else if (v[0] == "..") {
+		if (inode_array[inum_cur].inum > 0) {
+			temp_cur = inode_array[inum_cur].iparent;
+		}
+	}
+	else {
+		temp_cur = inum_cur;
+		int i;
+		for (i = 0; i < INODENUM; i++) {
+			if ((inode_array[i].inum > 0) &&//是否为空
+				(inode_array[i].iparent == inum_cur) &&
+				(inode_array[i].type == 'd') &&
+				inode_array[i].file_name == v[0]) {
+				break;
+			}
+		}
+		if (i == INODENUM) {
+			return -1;
+		}
+		else {
+			temp_cur = i;
+		}
+	}
+	int i;
+	for (unsigned int count = 1; count < v.size(); count++) {
+		for (i = 0; i < INODENUM; i++) {
+			if ((inode_array[i].inum > 0) &&//是否为空
+				(inode_array[i].iparent == temp_cur) &&
+				(inode_array[i].type == 'd') &&
+				inode_array[i].file_name == v[count]) {
+				break;
+			}
+		}
+		if (i == INODENUM) {
+			return -1;
+		}
+		else {
+			temp_cur = i;
+		}
+	}
+	result_cur = temp_cur;
+	return result_cur;
+}
 									//创建映像hd，并将所有用户和文件清除
 void format(void)
 {
@@ -21,7 +84,7 @@ void format(void)
 	printf("WARNING:ALL DATA ON THIS FILESYSTEM WILL BE LOST!\n");
 	printf("Proceed with Format(Y/N)?");
 	scanf("%c", &choice);
-	//gets(temp);
+	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		if ((fp = fopen(image_name, "w+b")) == NULL)
@@ -58,6 +121,7 @@ void format(void)
 	return;
 }
 // 功能: 用户登陆，如果是新用户则创建用户
+
 void login(void)
 {
 	char *p;
@@ -68,7 +132,7 @@ void login(void)
 	do
 	{
 		printf("login:");
-		gets(user_name);
+		gets_s(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch())
@@ -116,7 +180,7 @@ void login(void)
 	{
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		//gets(temp);
+		gets_s(temp);
 		if ((choice == 'y') || (choice == 'Y'))
 		{
 			strcpy(user.user_name, user_name);
@@ -130,6 +194,7 @@ void login(void)
 	}
 }
 // 功能: 将所有i节点读入内存
+
 void init(void)
 {
 	int   i;
@@ -152,36 +217,159 @@ void init(void)
 	for (i = 0; i < FILENUM; i++)
 		file_array[i].inum = -1;
 }
-// 功能: 分析用户命令, 将分析结果填充argc和argv
+
+void StrListForCom() {
+	vc_of_str.clear();
+	vc_of_str.push_back("cd");
+	vc_of_str.push_back("mkdir");
+	vc_of_str.push_back("ls");
+	vc_of_str.push_back("vi");
+	vc_of_str.push_back("sudo");
+	vc_of_str.push_back("rmfile");
+	vc_of_str.push_back("touch");
+	vc_of_str.push_back("man");
+	vc_of_str.push_back("cat");
+	vc_of_str.push_back("clear");
+	vc_of_str.push_back("rmdir");
+	vc_of_str.push_back("df");
+}
+
+void StrListForAdd() {
+	vc_of_str.clear();
+	int temp_cur;
+	if (s2.empty()) {
+		temp_cur = inum_cur;
+	}
+	else {
+		if (s2[s2.length() - 1] == '/'&&s2.length()>1) {
+			s2=s2.substr(0, s2.length() - 1);
+			temp_cur = readby();
+			s2 += '/';
+		}
+		else
+			temp_cur = readby();
+	}
+	for (int i = 0; i < INODENUM; i++) {
+		if ((inode_array[i].inum > 0) &&
+			(inode_array[i].iparent == temp_cur)) {
+			if (inode_array[i].type == 'd' && check(i))
+			{
+				string temp = inode_array[i].file_name;
+				temp = "/" + temp;
+				vc_of_str.push_back(temp);
+			}
+			if (inode_array[i].type == '-' && check(i))
+			{
+				vc_of_str.push_back(inode_array[i].file_name);
+			}
+		}
+
+	}
+}
+
 // 结果: 0-14为系统命令, 15为命令错误
-int analyse(char *str)
+int analyse()
 {
-	int  i;
-	char temp[20];
-	char *ptr_char;
-	const char  *syscmd[] = { "help", "cd", "dir", "mkdir", "creat", "open", "read", "write", "close", "delete", "logout", "clear","format","quit","rd" };
-	argc = 0;
-	for (i = 0, ptr_char = str; *ptr_char != '\0'; ptr_char++)
-	{
-		if (*ptr_char != ' ')
-		{
-			while (*ptr_char != ' ' && (*ptr_char != '\0'))
-				temp[i++] = *ptr_char++;
-			argv[argc] = (char *)malloc(i + 1);
-			strncpy(argv[argc], temp, i);
-			argv[argc][i] = '\0';
-			argc++;
-			i = 0;
-			if (*ptr_char == '\0') break;
+	string s = ""; s1 = ""; s2 = "";
+	int tabcount = 0;
+	int res = 0;
+	while (1) {
+		s1 = s.substr(0, s.find_first_of(' '));
+		if(s.find(' ')==-1)s2 = "";
+		else { 
+			s2 = s.substr(s.find_first_of(' ') + 1);
+			while (s2.length()>0 && s2[s2.length() - 1] == ' ') {
+				s2 = s2.substr(0, s2.length() - 1);
+			}
+			while (s2.length()>0&&s2[0] == ' ') {
+				s2 = s2.substr(1);
+			} 
+		}
+		int ch = _getch();
+		if (ch == 8) {				//退格
+			if (!s.empty()) {
+				printf("%c", 8);
+				printf(" ");
+				printf("%c", 8);
+				s.pop_back();
+			}
+		}
+		else if (ch == 13) {		//回车
+			for (res = 0; res < 15; res++) {
+				if (s1 == Commands[res])break;
+			}
+			break;
+		}
+		else if (ch == 9) {			//tab
+			int count = 0; vector<int>v;
+			string tstr;
+			if (s.find(' ') != -1) {
+				tstr = s.substr(s.find_last_of(' ') + 1);
+				if (tstr.find('/') != -1) {
+					tstr = tstr.substr(tstr.find_last_of('/'));
+				}
+				StrListForAdd();
+			}
+			else {
+				tstr = s;
+				StrListForCom();
+			}
+			for (unsigned int i = 0; i < vc_of_str.size(); i++) {
+				if (vc_of_str[i].length() >= tstr.length() && vc_of_str[i].substr(0, tstr.length()) == tstr) {
+					count++; v.push_back(i);
+				}
+			}
+			if (count < 1) {
+				if (s.find(' ') == -1) {
+					s.push_back(' ');
+					printf(" ");
+				}
+				tabcount = -1;
+			}
+			if (count == 1) {
+				for (unsigned int i = tstr.length(); i < vc_of_str[v[0]].length(); i++) {
+					s.push_back(vc_of_str[v[0]][i]);
+					printf("%c", vc_of_str[v[0]][i]);
+				}
+				if (s.find(' ') == -1) {
+					s.push_back(' ');
+					printf(" ");
+				}
+				tabcount = -1;
+			}
+			if (count > 1 && tabcount) {
+				cout << "\n";
+				cout << vc_of_str[v[0]];
+				for (unsigned int i = 1; i < v.size(); i++) {
+					cout << "    " << vc_of_str[v[i]];
+				}
+				cout << endl;
+				pathset();
+				cout << s;
+				tabcount = -1;
+			}
+
+		}
+		else if (ch == ' ') {
+			printf("%c", ch);
+			s.push_back(ch);
+		}
+		else {
+			printf("%c", ch);
+			s.push_back(ch);
+		}
+		//用于处理按两次tab
+		if (ch == 9) {
+			tabcount++;
+		}
+		else {
+			tabcount = 0;
 		}
 	}
-	if (argc != 0)
-	{
-		for (i = 0; (i < 15) && strcmp(argv[0], syscmd[i]); i++);
-		return i;
-	}
-	else return 15;
+	printf("\n");
+	return res;
 }
+
 // 功能: 将num号i节点保存到hd.dat
 void save_inode(int num)
 {
@@ -194,6 +382,7 @@ void save_inode(int num)
 	fwrite(&inode_array[num], sizeof(Inode), 1, fp);
 	fclose(fp);
 }
+
 // 功能: 申请一个数据块
 int get_blknum(void)
 {
@@ -217,6 +406,7 @@ int get_blknum(void)
 	fclose(fp);
 	return i;
 }
+
 // 功能: 将i节点号为num的文件读入temp 
 void read_blk(int num)
 {
@@ -252,6 +442,7 @@ void read_blk(int num)
 	temp[i] = '\0';
 	fclose(fp);
 }
+
 // 功能: 将temp的内容输入hd的数据区
 void write_blk(int num)
 {
@@ -277,6 +468,7 @@ void write_blk(int num)
 	fputc('\0', fp);
 	fclose(fp);
 }
+
 // 功能: 释放文件块号为num的文件占用的空间
 void release_blk(int num)
 {
@@ -291,6 +483,7 @@ void release_blk(int num)
 	fputc('0', fp);
 	fclose(fp);
 }
+
 // 功能: 显示帮助命令
 void help(void)
 {
@@ -310,103 +503,86 @@ logout ---  exit user \n\
 rd     ---  delete a directory \n\
 quit   ---  exit this system\n");
 }
+
 //设置文件路径
 void pathset()
 {
-	char path[50];
-	int m, n;
-	if (inode_array[inum_cur].inum == 0)
-		strcpy(path, user.user_name);
-	else
-	{
-		strcpy(path, user.user_name);
-		m = 0;
-		n = inum_cur;
-		while (m != inum_cur)
-		{
-			while (inode_array[n].iparent != m)
-			{
-				n = inode_array[n].iparent;
-			}
-			strcat(path, "/");
-			strcat(path, inode_array[n].file_name);
-			m = n;
-			n = inum_cur;
+	string s;
+	if (inode_array[inum_cur].inum == 0)s = "";
+	else {
+		int temp = inum_cur;
+		while (inode_array[temp].inum != 0) {
+			s = inode_array[temp].file_name + s;
+			s = '/' + s;
+			temp = inode_array[temp].iparent;
 		}
 	}
-	printf("[%s]@", path);
+	cout << user.user_name << "@" << "4423" << ":~" << s << "# ";
 }
+
+
 // 功能: 切换目录(cd .. 或者 cd dir1)
-void cd(void)
+void cd()
 {
-	int i;
-	if (argc != 2)
-	{
-		printf("Command cd must have two args. \n");
-		return;
+	int temp_cur;
+	//cout << "s2" << s2 << endl;
+	if (s2.length() == 0) {
+		temp_cur = 0;
 	}
-	if (!strcmp(argv[1], ".."))
-		inum_cur = inode_array[inum_cur].iparent;
-	else
-	{
-		// 遍历i节点数组
-		for (i = 0; i < INODENUM; i++)
-			if ((inode_array[i].inum>0) &&
-				(inode_array[i].type == 'd') &&
-				(inode_array[i].iparent == inum_cur) &&
-				!strcmp(inode_array[i].file_name, argv[1]) &&
-				check(i))
-				break;
-		if (i == INODENUM)
-			printf("This directory isn't exsited.\n");
-		else inum_cur = i;
+	else {
+		temp_cur = readby();
+	}
+	if (temp_cur != -1) {
+		inum_cur = temp_cur;
+	}
+	else {
+		cout << "No Such Directory" << endl;
 	}
 }
+
+
 // 功能: 显示当前目录下的子目录和文件(dir)
 void dir(void)
 {
-	int i;
-	int dcount = 0, fcount = 0;
-	short bcount = 0;
-	if (argc != 1)
-	{
-		printf("Command dir must have one args. \n");
-		return;
+	int temp_cur;
+	int i = 0;
+	if (s2.length() == 0){
+		temp_cur = inum_cur;
+		}
+	else {
+		temp_cur = readby();
+		if (temp_cur == -1) {
+			cout << "No Such Directory" << endl;
+			return;
+		}
 	}
-	// 遍历i节点数组, 显示当前目录下的子目录和文件名
-	for (i = 0; i < INODENUM; i++)
-		if ((inode_array[i].inum> 0) &&
-			(inode_array[i].iparent == inum_cur))
+	if (temp_cur != -1 && inode_array[temp_cur].type == 'd')
+		for (i = 0; i < INODENUM; i++)
 		{
-			if (inode_array[i].type == 'd' && check(i))
+			if ((inode_array[i].inum > 0) &&
+				(inode_array[i].iparent == temp_cur))
 			{
-				dcount++;
-				printf("%-20s<DIR>\n", inode_array[i].file_name);
-			}
-			if (inode_array[i].type == '-' && check(i))
-			{
-				fcount++;
-				bcount += inode_array[i].length;
-				printf("%-20s%12d bytes\n", inode_array[i].file_name, inode_array[i].length);
+				if (inode_array[i].type == 'd' && check(i))
+				{
+					printf("%-20s<DIR>\n", inode_array[i].file_name);
+				}
+				if (inode_array[i].type == '-' && check(i))
+				{
+					printf("%-20s%12d bytes\n", inode_array[i].file_name, inode_array[i].length);
+				}
 			}
 		}
-	printf("\n                    %d file(s)%11d bytes\n", fcount, bcount);
-	printf("                    %d dir(s) %11d bytes FreeSpace\n", dcount, 1024 * 1024 - bcount);
 }
+
 // 功能: 删除目录树(rd dir1)
 void rd()
 {
 	int i, j, t, flag = 0;
-	if (argc != 2)
-	{
-		printf("Command delete must have one args. \n");
-		return;
-	}
 	for (i = 0; i < INODENUM; i++)//查找待删除目录
 		if ((inode_array[i].inum > 0) &&//是否为空
 			(inode_array[i].iparent == inum_cur) &&
 			(inode_array[i].type == 'd') &&
-			(!strcmp(inode_array[i].file_name, argv[1])))
+			s2==inode_array[i].file_name)
 		{
 			int chk = check(i);//检查用户权限
 			if (chk != 1)
@@ -433,16 +609,22 @@ void rd()
 		delet(i);//待删除目录为空删除之
 	return;
 }
+
 // 功能: 在当前目录下创建子目录(mkdir dir1)
 void mkdir(void)
 {
 	int i;
-	if (argc != 2)
-	{
-		printf("command mkdir must have two args. \n");
+	// 遍历i节点数组, 查找未用的i节点
+	for (i = 0; i < INODENUM; i++) {
+		if (inode_array[i].iparent == inum_cur && inode_array[i].type == 'd'
+			&&inode_array[i].file_name == s2 && inode_array[i].inum > 0) {
+			break;
+		}
+	}
+	if (i != INODENUM) {
+		printf("There is directory having same name.\n");
 		return;
 	}
-	// 遍历i节点数组, 查找未用的i节点
 	for (i = 0; i < INODENUM; i++)
 		if (inode_array[i].inum < 0) break;
 	if (i == INODENUM)
@@ -451,27 +633,23 @@ void mkdir(void)
 		exit(-1);
 	}
 	inode_array[i].inum = i;
-	strcpy(inode_array[i].file_name, argv[1]);
+	strcpy(inode_array[i].file_name, s2.data());
 	inode_array[i].type = 'd';
 	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
 }
+
 // 功能: 在当前目录下创建文件(creat file1)
 void creat(void)
 {
 	int i;
-	if (argc != 2)
-	{
-		printf("command creat must have one args. \n");
-		return;
-	}
 	for (i = 0; i < INODENUM; i++)
 	{
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv[1]))
+			s2==inode_array[i].file_name)
 		{
 			printf("This file is exsit.\n");
 			return;
@@ -485,26 +663,22 @@ void creat(void)
 		exit(-1);
 	}
 	inode_array[i].inum = i;
-	strcpy(inode_array[i].file_name, argv[1]);
+	s2 = inode_array[i].file_name;
 	inode_array[i].type = '-';
 	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
 }
+
 // 功能: 打开当前目录下的文件(open file1)
 void open()
 {
 	int i, inum, mode, filenum, chk;
-	if (argc != 2)
-	{
-		printf("command open must have one args. \n");
-		return;
-	}
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv[1]))
+			s2 == inode_array[i].file_name)
 			break;
 	if (i == INODENUM)
 	{
@@ -520,7 +694,7 @@ void open()
 	}
 	printf("Please input open mode:(1: read, 2: write, 3: read and write):");
 	scanf("%d", &mode);
-	gets(temp);
+	gets_s(temp);
 	if ((mode < 1) || (mode > 3))
 	{
 		printf("Open mode is wrong.\n");
@@ -543,36 +717,32 @@ void open()
 	else if (mode == 2) printf("write only.\n");
 	else printf("read and write.\n");
 }
+
 // 功能: 从文件中读出字符(read file1)
 void read()
 {
 	int i, start, num, inum;
-	if (argc != 2)
-	{
-		printf("command read must have one args. \n");
-		return;
-	}
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum > 0) &&
-			!strcmp(file_array[i].file_name, argv[1]))
+			s2 == file_array[i].file_name)
 			break;
 	if (i == FILENUM)
 	{
-		printf("Open %s first.\n", argv[1]);
+		cout << "Open " << s2 << " first.\n";
 		return;
 	}
 	else if (file_array[i].mode == 2)
 	{
-		printf("Can't read %s.\n", argv[1]);
+		cout<<"Can't read "<<s2<<".\n";
 		return;
 	}
 	inum = file_array[i].inum;
-	printf("The length of %s:%d.\n", argv[1], inode_array[inum].length);
+	cout<<"The length of "<<s2<<":"<< inode_array[inum].length<<".\n";
 	if (inode_array[inum].length > 0)
 	{
 		printf("The start position:");
 		scanf("%d", &start);
-		gets(temp);
+		gets_s(temp);
 		if ((start<0) || (start >= inode_array[inum].length))
 		{
 			printf("Start position is wrong.\n");
@@ -580,7 +750,7 @@ void read()
 		}
 		printf("The bytes you want to read:");
 		scanf("%d", &num);
-		gets(temp);
+		gets_s(temp);
 		if (num <= 0)
 		{
 			printf("The num you want to read is wrong.\n");
@@ -592,26 +762,22 @@ void read()
 		printf("\n");
 	}
 }
+
 // 功能: 向文件中写入字符(write file1)
 void write()
 {
 	int i, inum, length;
-	if (argc != 2)
-	{
-		printf("Command write must have one args. \n");
-		return;
-	}
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum>0) &&
-			!strcmp(file_array[i].file_name, argv[1])) break;
+			s2==file_array[i].file_name) break;
 	if (i == FILENUM)
 	{
-		printf("Open %s first.\n", argv[1]);
+		cout << "Open " << s2 << " first.\n";
 		return;
 	}
 	else if (file_array[i].mode == 1)
 	{
-		printf("Can't write %s.\n", argv[1]);
+		cout << "Can't write " << s2 << ".\n";
 		return;
 	}
 	inum = file_array[i].inum;
@@ -620,7 +786,7 @@ void write()
 	{
 		printf("The length you want to write(0-1024):");
 		scanf("%d", &length);
-		gets(temp);
+		gets_s(temp);
 		if ((length < 0) && (length >1024))
 		{
 			printf("Input wrong.\n");
@@ -632,24 +798,20 @@ void write()
 			inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
 		printf("Input the data(Enter to end):\n");
-		gets(temp);
+		gets_s(temp);
 		write_blk(inum);
 	}
 	else
 		printf("This file can't be written.\n");
 }
+
 // 功能: 关闭已经打开的文件(close file1)
 void close(void)
 {
 	int i;
-	if (argc != 2)
-	{
-		printf("Command close must have one args. \n");
-		return;
-	}
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum > 0) &&
-			!strcmp(file_array[i].file_name, argv[1])) break;
+			s2==file_array[i].file_name) break;
 	if (i == FILENUM)
 	{
 		printf("This file doesn't be opened.\n");
@@ -658,9 +820,10 @@ void close(void)
 	else
 	{
 		file_array[i].inum = -1;
-		printf("Close %s successful!\n", argv[1]);
+		cout << "Close " << s2 << " successful!\n";
 	}
 }
+
 //删除目录树
 void delet(int innum)
 {
@@ -680,19 +843,15 @@ void delet(int innum)
 	}
 	save_inode(innum);
 }
+
 // 功能: 删除文件(delete file1)
 void del(void)
 {
 	int i, chk;
-	if (argc != 2)
-	{
-		printf("Command delete must have one args. \n");
-		return;
-	}
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv[1])) break;
+			s2 == inode_array[i].file_name) break;
 	if (i == INODENUM)
 	{
 		printf("This file doesn't exist.\n");
@@ -715,19 +874,12 @@ void del(void)
 	delet(i);
 }
 // 功能: 退出当前用户(logout)
+
 void logout()
 {
-	char choice;
-	printf("Do you want to exit this user(y/n)?");
-	scanf("%c", &choice);
-	//gets(temp);
-	if ((choice == 'y') || (choice == 'Y'))
-	{
-		printf("\nCurrent user exited!\nPlease to login by other user!\n");
-		login();
-	}
-	return;
+	login();
 }
+
 //检查当前I节点的文件是否属于当前用户
 int check(int i)
 {
@@ -739,21 +891,24 @@ int check(int i)
 	if (j == 0)  return 1;
 	else      return 0;
 }
+
 // 功能: 退出文件系统(quit)
 void quit()
 {
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	//gets(temp);
+	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(0);
 }
+
 // 功能: 显示错误
 void errcmd()
 {
 	printf("Command Error!!!\n");
 }
+
 //清空内存中存在的用户名
 void free_user()
 {
@@ -763,15 +918,14 @@ void free_user()
 }
 // 功能: 循环执行用户输入的命令, 直到logout
 // "help", "cd", "dir", "mkdir", "creat", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
+
 void command(void)
 {
-	char cmd[100];
 	system("cls");
 	do
 	{
 		pathset();
-		gets(cmd);
-		switch (analyse(cmd))
+		switch (analyse())
 		{
 		case 0:
 			help();
@@ -829,6 +983,7 @@ void command(void)
 		}
 	} while (1);
 }
+
 // 主函数
 int main(void)
 {
@@ -837,3 +992,4 @@ int main(void)
 	command();
 	return 0;
 }
+
