@@ -663,7 +663,7 @@ void creat(void)
 		exit(-1);
 	}
 	inode_array[i].inum = i;
-	s2 = inode_array[i].file_name;
+	strcpy(inode_array[i].file_name,s2.data());
 	inode_array[i].type = '-';
 	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
