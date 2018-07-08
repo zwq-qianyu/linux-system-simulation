@@ -1,4 +1,4 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "head.h"
 char		choice;
 vector<string>vc_of_str;
@@ -87,7 +87,7 @@ void format(void)
 	printf("WARNING:ALL DATA ON THIS FILESYSTEM WILL BE LOST!\n");
 	printf("Proceed with Format(Y/N)?");
 	scanf("%c", &choice);
-	gets_s(temp);
+	gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		if ((fp = fopen(image_name, "w+b")) == NULL)
@@ -123,23 +123,22 @@ void format(void)
 	}
 	return;
 }
-// 功能: 用户登陆，如果是新用户则创建用户
 
-void login(void)
-{
+
+void login(){
+	/*功能: 用户登陆，如果是新用户则创建用户*/
 	char *p;
 	int  flag;
 	char user_name[10];
 	char password[10];
 	char file_name[10] = "user.txt";
-	do
-	{
+	char choice;    //选择是否（y/n）
+	do{
 		printf("login:");
-		gets_s(user_name);
+		gets(user_name);
 		printf("password:");
 		p = password;
-		while (*p = _getch())
-		{
+		while (*p = _getch()){
 			if (*p == 0x0d) //当输入回车键时，0x0d为回车键的ASCII码
 			{
 				*p = '\0'; //将输入的回车键转换成空格
@@ -149,46 +148,44 @@ void login(void)
 			p++;
 		}
 		flag = 0;
-		if ((fp = fopen(file_name, "r+")) == NULL)
-		{
+		if ((fp = fopen(file_name, "r+")) == NULL){
 			printf("\nCan't open file %s.\n", file_name);
-			printf("This filesystem not exist, it will be create!\n");
-			format();
+			printf("This filesystem is not exist now, it will be create~~~\n");
+			format();     //黄春伟负责这个模块 
 			login();
 		}
-		while (!feof(fp))
-		{
-			fread(&user, sizeof(char)*20, 1, fp);
+		while (!feof(fp)){
+			fread(&user, sizeof(User), 1, fp);
 			// 已经存在的用户, 且密码正确
-			if (!strcmp(user.user_name,user_name) &&
-				!strcmp(user.password, password))
-			{
+			if (!strcmp(user.user_name, user_name) &&
+				!strcmp(user.password, password)){
 				fclose(fp);
 				printf("\n");
-				return;
+				return;     //登陆成功，直接跳出登陆函数 
 			}
 			// 已经存在的用户, 但密码错误
-			else if (!strcmp(user_name, user.user_name))
-			{
+			else if (!strcmp(user.user_name, user_name)){
 				printf("\nThis user is exist, but password is incorrect.\n");
-				flag = 1;
+				flag = 1;    //设置flag为1，表示密码错误，重新登陆 
 				fclose(fp);
 				break;
-			}
+			} 
 		}
-		if (flag == 0) break;
+		if (flag == 0){
+			printf("\nThis user is not exist.\n");
+			break;    //用户不存在，先跳出循环创建新用户 
+		}  
 	} while (flag);
+	
 	// 创建新用户
-	if (flag == 0)
-	{
+	if (flag == 0){
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		gets_s(temp);
-		if ((choice == 'y') || (choice == 'Y'))
-		{
+		//gets(temp);
+		if ((choice == 'y') || (choice == 'Y')){
 			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
-			fwrite(&user, sizeof(char)*20, 1, fp);
+			fwrite(&user, sizeof(User), 1, fp);
 			fclose(fp);
 			return;
 		}
@@ -196,6 +193,8 @@ void login(void)
 			login();
 	}
 }
+
+
 // 功能: 将所有i节点读入内存
 
 void init(void)
@@ -219,6 +218,18 @@ void init(void)
 	// 初始化打开文件表
 	for (i = 0; i < FILENUM; i++)
 		file_array[i].inum = -1;
+}
+
+void df() {
+	int count_inode = 0, count_mem = 0;
+	for (int i = 0; i < INODENUM; i++) {
+		if (inode_array[i].inum > 0)count_inode++;
+	}
+	for (int i = 0; i < BLKNUM; i++) {
+		if (bitmap[i] == '1')count_mem++;
+	}
+	cout << "Inode使用:" << count_inode << "/" << INODENUM << endl;
+	cout << "内存使用:" << count_mem << "/" << BLKNUM << endl;
 }
 
 void StrListForCom() {
@@ -490,24 +501,22 @@ void release_blk(int num)
 	fclose(fp);
 }
 
-// 功能: 显示帮助命令
-void help(void)
-{
+void help(){
+	/*功能: 显示帮助命令*/
 	printf("command: \n\
-help   ---  show help menu \n\
-clear  ---  clear the screen \n\
-cd     ---  change directory \n\
-mkdir  ---  make directory   \n\
-creat  ---  create a new file \n\
-open   ---  open a exist file \n\
-read   ---  read a file \n\
-write  ---  write something to a file \n\
-close  ---  close a file \n\
-delete ---  delete a exist file \n\
-format ---  format a exist filesystem \n\
-logout ---  exit user \n\
-rd     ---  delete a directory \n\
-quit   ---  exit this system\n");
+	help   ---  show help menu \n\
+	clear  ---  clear the screen \n\
+	cd     ---  change directory \n\
+	mkdir  ---  make directory   \n\
+	touch  ---  create a new file \n\
+	cat    ---  open and read a exist file \n\
+	vi     ---  open and write something to a file \n\
+	close  ---  close a file \n\
+	rm     ---  delete a exist file \n\
+	rm -r  ---  delete a directory \n\
+	format ---  format a exist filesystem \n\
+	su     ---  switch current user \n\
+	exit   ---  exit this system \n");
 }
 
 //设置文件路径
@@ -659,7 +668,7 @@ void mkdir(void)
 void creat(void)
 {
 	int i;
-	cout <<"s2"<< s2 << endl;
+	//cout <<"s2"<< s2 << endl;
 	for (i = 0; i < INODENUM; i++)
 	{
 		if ((inode_array[i].inum > 0) &&
@@ -686,35 +695,42 @@ void creat(void)
 	save_inode(i);
 }
 
-// 功能: 打开当前目录下的文件(open file1)
-void open()
+
+//检查当前I节点的文件是否属于当前用户
+int check(int i)
 {
-	int i, inum, mode, filenum;
+	int j;
+	char *uuser, *fuser;
+	uuser = user.user_name;
+	fuser = inode_array[i].user_name;
+	j = strcmp(fuser, uuser);
+	if (j == 0)  return 1;
+	else      return 0;
+}
+
+
+void open(int mymode, string argv1){
+	/*功能: 打开当前目录下的文件(open file1)*/
+	int i, inum, mode, filenum, chk;
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			s2 == inode_array[i].file_name &&
+			argv1 == inode_array[i].file_name &&
 			!strcmp(inode_array[i].user_name, user.user_name))
 			break;
-	if (i == INODENUM)
-	{
-		printf("The file you want to open doesn't exsited.\n");
+	if (i == INODENUM){
+		cout<<"This is no " + argv1 + " file...\n";
 		return;
 	}
 	inum = i;
-	printf("Please input open mode:(1: read, 2: write, 3: read and write):");
-	scanf("%d", &mode);
-	gets_s(temp);
-	if ((mode < 1) || (mode > 3))
-	{
-		printf("Open mode is wrong.\n");
+	chk = check(i);               //检查该文件是否为当前用户的文件
+	mode = mymode; 
+	if (chk != 1){
+		printf("This file is not yours !\n");
 		return;
 	}
-	for (i = 0; i < FILENUM; i++)
-		if (file_array[i].inum < 0) break;
-	if (i == FILENUM)
-	{
-		printf("The file table is full, please close some file.\n");
+	if ((mode < 1) || (mode > 3)){
+		printf("Open mode is wrong.\n");
 		return;
 	}
 	filenum = i;
@@ -722,116 +738,135 @@ void open()
 	strcpy(file_array[filenum].file_name, inode_array[inum].file_name);
 	file_array[filenum].mode = mode;
 	file_array[filenum].offset = 0;
-	printf("Open file %s by ", file_array[filenum].file_name);
-	if (mode == 1) printf("read only.\n");
-	else if (mode == 2) printf("write only.\n");
-	else printf("read and write.\n");
 }
 
-// 功能: 从文件中读出字符(read file1)
-void read()
-{
+void cat(){
+	/*功能: 从文件中读出字符(read file1)*/
 	int i, start, num, inum;
+	/*if (argc != 2){
+		printf("command cat must have one object. \n");
+		return;
+	}*/
+	open(1,s2);
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum > 0) &&
-			s2 == file_array[i].file_name)
+			(s2 == file_array[i].file_name))
 			break;
-	if (i == FILENUM)
-	{
-		cout << "Open " << s2 << " first.\n";
-		return;
-	}
-	else if (file_array[i].mode == 2)
-	{
-		cout<<"Can't read "<<s2<<".\n";
-		return;
-	}
 	inum = file_array[i].inum;
-	cout<<"The length of "<<s2<<":"<< inode_array[inum].length<<".\n";
-	if (inode_array[inum].length > 0)
-	{
-		printf("The start position:");
-		scanf("%d", &start);
-		gets_s(temp);
-		if ((start<0) || (start >= inode_array[inum].length))
-		{
-			printf("Start position is wrong.\n");
-			return;
-		}
-		printf("The bytes you want to read:");
-		scanf("%d", &num);
-		gets_s(temp);
-		if (num <= 0)
-		{
-			printf("The num you want to read is wrong.\n");
-			return;
-		}
+	//printf("The length of %s:%d.\n", argv[1], inode_array[inum].length);
+	if (inode_array[inum].length > 0){
 		read_blk(inum);
-		for (i = 0; (i < num) && (temp[i] != '\0'); i++)
-			printf("%c", temp[start + i]);
+		for (i = 0; temp[i] != '\0'; i++)
+			printf("%c", temp[i]);
 		printf("\n");
 	}
+	close(s2);
 }
 
-// 功能: 向文件中写入字符(write file1)
-void write()
-{
+
+void vi(){
+	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
+	/*if (argc != 2){
+		printf("Command write must have one args. \n");
+		return;
+	}*/
+	open(3, s2);
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum>0) &&
-			s2==file_array[i].file_name) break;
-	if (i == FILENUM)
-	{
-		cout << "Open " << s2 << " first.\n";
-		return;
-	}
-	else if (file_array[i].mode == 1)
-	{
-		cout << "Can't write " << s2 << ".\n";
-		return;
-	}
+			(s2 == file_array[i].file_name)) break;
 	inum = file_array[i].inum;
-	printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
-	if (inode_array[inum].length == 0)
-	{
-		printf("The length you want to write(0-1024):");
-		scanf("%d", &length);
-		gets_s(temp);
-		if ((length < 0) && (length >1024))
-		{
-			printf("Input wrong.\n");
-			return;
-		}
-		inode_array[inum].length = length;
-		inode_array[inum].address[0] = get_blknum();
-		if (length > 512)
-			inode_array[inum].address[1] = get_blknum();
+	//printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
+	if (inode_array[inum].length == 0){
+		inode_array[inum].length = 1024;
+		inode_array[inum].address[0] = get_blknum();    //一次分配只有512B的空间//，所以调用2次get_blknum()获取1024B空间
+		//inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
-		printf("Input the data(Enter to end):\n");
-		gets_s(temp);
+		/*printf("Input the data(Enter to end):\n");
+		gets(temp);*/
+		printf("Input the data(End by #):\n");
+		char c;
+		char *m;
+		string str;
+		while((c=getchar())!='#'){
+			if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
+				c = '\0'; //将输入的回车键转换成空格
+			}
+			str = str + gets(m) +"\n";	
+		}
+		inode_array[inum].length = str.length();
+		for(int i=0;i<1024;i++){
+			temp[i] = str[i];
+		}
+		printf(temp);
 		write_blk(inum);
 	}
 	else
-		printf("This file can't be written.\n");
+		printf("This file has content,it can't be written.\n");
+	close(s2);
 }
 
-// 功能: 关闭已经打开的文件(close file1)
-void close(void)
-{
+void close(string argv1){
+	/*功能: 关闭已经打开的文件(close file1)*/
 	int i;
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum > 0) &&
-			s2==file_array[i].file_name) break;
-	if (i == FILENUM)
-	{
-		printf("This file doesn't be opened.\n");
+			(argv1 == file_array[i].file_name)) break;
+	if (i == FILENUM){
+		printf("This file didn't be opened.\n");
 		return;
 	}
 	else
-	{
 		file_array[i].inum = -1;
-		cout << "Close " << s2 << " successful!\n";
-	}
+}
+
+void su(){
+	/*功能: 切换当前用户(logout)*/ 
+	char *p;
+	int flag; 
+	string user_name;
+	char password[10];
+	char file_name[10] = "user.txt";
+	fp = fopen(file_name, "r");           //初始化指针，将文件系统的指针指向文件系统的首端(以只读方式打开文件)
+	/*if (argc != 2){
+		printf("command su must have one object. \n");
+		return;
+	}*/
+	do{
+		user_name = s2;
+		printf("password:");
+		p = password;
+		while (*p = _getch()){
+			if (*p == 0x0d){ 		//当输入回车键时，0x0d为回车键的ASCII码
+				*p = '\0'; 			//将输入的回车键转换成空格
+				break;
+			}
+			printf("*");   //将输入的密码以"*"号显示
+			p++;
+		}
+		flag = 0;
+		while (!feof(fp)){
+			fread(&user, sizeof(User), 1, fp);
+			// 已经存在的用户, 且密码正确
+			if ((user.user_name == user_name) &&
+				!strcmp(user.password, password)){
+				fclose(fp);
+				printf("\n");
+				return;     //登陆成功，直接跳出登陆函数 
+			}
+			// 已经存在的用户, 但密码错误
+			else if ((user.user_name == user_name)){
+				printf("\nThis user is exist, but password is incorrect.\n");
+				flag = 1;    //设置flag为1，表示密码错误，重新登陆 
+				fclose(fp);
+				break;
+			} 
+		}
+		if (flag == 0){
+			printf("\nThis user is not exist.\n");
+			break;     //用户不存在，直接跳出循环，进行下一条指令的输入
+		} 
+	}while(flag);
 }
 
 //根据Inode节点号删存储
@@ -893,7 +928,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets_s(temp);
+	gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(0);
 }
@@ -941,16 +976,16 @@ void command(void)
 			creat();
 			break;
 		case 5:
-			open();
+			//open();
 			break;
 		case 6:
-			read();
+			cat();
 			break;
 		case 7:
-			write();
+			vi();
 			break;
 		case 8:
-			close();
+			//close();
 			break;
 		case 9:
 			rmfile();
@@ -985,18 +1020,6 @@ void command(void)
 	} while (1);
 }
 
-
-void df() {
-	int count_inode = 0, count_mem = 0;
-	for (int i = 0; i < INODENUM; i++) {
-		if (inode_array[i].inum > 0)count_inode++;
-	}
-	for (int i = 0; i < BLKNUM; i++) {
-		if (bitmap[i] == '1')count_mem++;
-	}
-	cout << "Inode使用:" << count_inode << "/" << INODENUM << endl;
-	cout << "内存使用:" << count_mem << "/" << BLKNUM << endl;
-}
 
 // 主函数
 int main(void)
