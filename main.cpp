@@ -774,35 +774,34 @@ void vi(){
 	open(3, s2);
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum>0) &&
-			(s2 == file_array[i].file_name)) break;
+			s2==file_array[i].file_name) break;
+	if (i == FILENUM){
+		cout << "Open " << s2 << " first.\n";
+		return;
+	}
 	inum = file_array[i].inum;
-	//printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
+	printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
 	if (inode_array[inum].length == 0){
-		inode_array[inum].length = 1024;
-		inode_array[inum].address[0] = get_blknum();    //一次分配只有512B的空间//，所以调用2次get_blknum()获取1024B空间
-		//inode_array[inum].address[1] = get_blknum();
+		/*printf("The length you want to write(0-1024):");
+		scanf("%d", &length);
+		gets(temp);
+		if ((length < 0) && (length >1024))
+		{
+			printf("Input wrong.\n");
+			return;
+		}*/
+		inode_array[inum].length = 512;
+		inode_array[inum].address[0] = get_blknum();
+		if (length > 512)
+			inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
-		/*printf("Input the data(Enter to end):\n");
-		gets(temp);*/
-		printf("Input the data(End by #):\n");
-		char c;
-		char *m;
-		string str;
-		while((c=getchar())!='#'){
-			if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
-				c = '\0'; //将输入的回车键转换成空格
-			}
-			str = str + gets(m) +"\n";	
-		}
-		inode_array[inum].length = str.length();
-		for(int i=0;i<1024;i++){
-			temp[i] = str[i];
-		}
-		printf(temp);
+		printf("Input the data(Enter to end):\n");
+		gets(temp);
+		//inode_array[inum].length = temp.length();
 		write_blk(inum);
 	}
 	else
-		printf("This file has content,it can't be written.\n");
+		printf("This file can't be written.\n");
 	close(s2);
 }
 
