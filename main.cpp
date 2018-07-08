@@ -160,7 +160,7 @@ void login(void)
 		{
 			fread(&user, sizeof(char)*20, 1, fp);
 			// 已经存在的用户, 且密码正确
-			if (user.user_name== user_name &&
+			if (!strcmp(user.user_name,user_name) &&
 				!strcmp(user.password, password))
 			{
 				fclose(fp);
@@ -186,7 +186,7 @@ void login(void)
 		gets_s(temp);
 		if ((choice == 'y') || (choice == 'Y'))
 		{
-			user.user_name= user_name;
+			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
 			fwrite(&user, sizeof(char)*20, 1, fp);
 			fclose(fp);
@@ -603,7 +603,7 @@ void mkdir(void)
 	inode_array[i].inum = i;
 	strcpy(inode_array[i].file_name, s2.data());
 	inode_array[i].type = 'd';
-	strcpy(inode_array[i].user_name, user.user_name.data());
+	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
@@ -634,7 +634,7 @@ void creat(void)
 	inode_array[i].inum = i;
 	strcpy( inode_array[i].file_name,s2.data());
 	inode_array[i].type = '-';
-	strcpy(inode_array[i].user_name, user.user_name.data());
+	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
