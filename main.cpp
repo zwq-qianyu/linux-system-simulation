@@ -160,7 +160,7 @@ void login(void)
 		{
 			fread(&user, sizeof(char)*20, 1, fp);
 			// 已经存在的用户, 且密码正确
-			if (user.user_name== user_name &&
+			if (!strcmp(user.user_name,user_name) &&
 				!strcmp(user.password, password))
 			{
 				fclose(fp);
@@ -168,7 +168,7 @@ void login(void)
 				return;
 			}
 			// 已经存在的用户, 但密码错误
-			else if (user.user_name== user_name)
+			else if (!strcmp(user_name, user.user_name))
 			{
 				printf("\nThis user is exist, but password is incorrect.\n");
 				flag = 1;
@@ -186,7 +186,7 @@ void login(void)
 		gets_s(temp);
 		if ((choice == 'y') || (choice == 'Y'))
 		{
-			user.user_name= user_name;
+			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
 			fwrite(&user, sizeof(char)*20, 1, fp);
 			fclose(fp);
@@ -244,13 +244,13 @@ void StrListForAdd() {
 	for (int i = 0; i < INODENUM; i++) {
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].iparent == temp_cur)) {
-			if (inode_array[i].type == 'd' && inode_array[i].user_name==user.user_name)
+			if (inode_array[i].type == 'd' && !strcmp(inode_array[i].user_name, user.user_name))
 			{
 				string temp = inode_array[i].file_name;
 				temp += '/';
 				vc_of_str.push_back(temp);
 			}
-			if (inode_array[i].type == '-' && inode_array[i].user_name == user.user_name)
+			if (inode_array[i].type == '-' && !strcmp(inode_array[i].user_name, user.user_name))
 			{
 				vc_of_str.push_back(inode_array[i].file_name);
 			}
@@ -554,13 +554,14 @@ void dir(void)
 		for (i = 0; i < INODENUM; i++)
 		{
 			if ((inode_array[i].inum > 0) &&
-				(inode_array[i].iparent == temp_cur))
+				(inode_array[i].iparent == temp_cur)
+				&& !strcmp(inode_array[i].user_name, user.user_name))
 			{
-				if (inode_array[i].type == 'd' && inode_array[i].user_name == user.user_name)
+				if (inode_array[i].type == 'd')
 				{
 					printf("%-20s<DIR>\n", inode_array[i].file_name);
 				}
-				if (inode_array[i].type == '-' && inode_array[i].user_name == user.user_name)
+				if (inode_array[i].type == '-')
 				{
 					printf("%-20s%12d bytes\n", inode_array[i].file_name, inode_array[i].length);
 				}
@@ -585,7 +586,7 @@ void mkdir(void)
 	for (i = 0; i < INODENUM; i++) {
 		if (inode_array[i].iparent == inum_cur && inode_array[i].type == 'd'
 			&&inode_array[i].file_name == s2 && inode_array[i].inum > 0 
-			&& inode_array[i].user_name == user.user_name) {
+			&& !strcmp(inode_array[i].user_name, user.user_name)) {
 			break;
 		}
 	}
@@ -603,7 +604,7 @@ void mkdir(void)
 	inode_array[i].inum = i;
 	strcpy(inode_array[i].file_name, s2.data());
 	inode_array[i].type = 'd';
-	strcpy(inode_array[i].user_name, user.user_name.data());
+	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
@@ -634,7 +635,7 @@ void creat(void)
 	inode_array[i].inum = i;
 	strcpy( inode_array[i].file_name,s2.data());
 	inode_array[i].type = '-';
-	strcpy(inode_array[i].user_name, user.user_name.data());
+	strcpy(inode_array[i].user_name, user.user_name);
 	inode_array[i].iparent = inum_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
@@ -647,7 +648,8 @@ void open()
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			s2 == inode_array[i].file_name)
+			s2 == inode_array[i].file_name &&
+			!strcmp(inode_array[i].user_name, user.user_name))
 			break;
 	if (i == INODENUM)
 	{
@@ -655,11 +657,6 @@ void open()
 		return;
 	}
 	inum = i;
-	if (inode_array[i].user_name == user.user_name)
-	{
-		printf("This file is not your !\n");
-		return;
-	}
 	printf("Please input open mode:(1: read, 2: write, 3: read and write):");
 	scanf("%d", &mode);
 	gets_s(temp);
@@ -819,7 +816,7 @@ void del(void)
 		printf("This file doesn't exist.\n");
 		return;
 	}
-	if (inode_array[i].user_name == user.user_name)
+	if (!strcmp(inode_array[i].user_name, user.user_name))
 	{
 		printf("This file is not your !\n");
 		return;
