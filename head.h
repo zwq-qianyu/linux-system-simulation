@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <string.h>
-
+#include <string>
+#include <iostream>
+#include <vector>
+using namespace std;
 #define BLKSIZE    512		// 数据块的大小 
 #define BLKNUM     512		// 数据块的块数
 #define INODESIZE  32		// i节点的大小
@@ -41,7 +44,7 @@ typedef struct
 // 申明函数
 void login(void);
 void init(void);
-int  analyse(char *);
+int  analyse();
 void save_inode(int);
 int	get_blknum(void);
 void read_blk(int);
@@ -55,16 +58,15 @@ void help(void);
 void cd(void);
 void dir(void);
 void mkdir(void);
-void touch(void);//
-void open(void);
-void read(void);
-void write(void);
-void close(void);
+void touch(void);
+void open(int, string);
+void cat(void);
+void vi(void);
+void close(string);
+void su();
 void del(void);
 void logout(void);
 void command(void);
 void rd();
 void quit();
-void clear(); //
-void errcmd();//
-void format();//
+void df();
