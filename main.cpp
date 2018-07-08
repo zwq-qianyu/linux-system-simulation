@@ -470,12 +470,15 @@ void creat(void)
 	}
 	for (i = 0; i < INODENUM; i++)
 	{
-		if ((inode_array[i].inum > 0) &&
-			(inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv[1]))
-		{
-			printf("This file is exsit.\n");
-			return;
+		if ((inode_array[i].inum > 0) && (inode_array[i].type == '-') &&
+			!strcmp(inode_array[i].file_name, argv[1])&&(inode_array[i].user_name==user.user_name))
+		{   
+			
+			if (inode_array[i].inum == inum_cur)
+			{
+				printf("This file is exsit.\n");
+				return;
+			}
 		}
 	}
 	for (i = 0; i < INODENUM; i++)
