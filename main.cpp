@@ -508,25 +508,22 @@ void release_blk(int num)
 	fclose(fp);
 }
 
-
-void help(){
+void help() {
 	/*功能: 显示帮助命令*/
 	printf("command: \n\
 	help   ---  show help menu \n\
+	clear  ---  clear the screen \n\
 	cd     ---  change directory \n\
-	clear  ---  clear the screen \n\
-	ls     ---  show all the files and directories in particular directory \n\
-	mkdir  ---  make a new directory   \n\
+	mkdir  ---  make directory   \n\
 	touch  ---  create a new file \n\
-	cat    ---  open and read an exist file \n\
-	vi     ---  open and write something to a particular file \n\
+	cat    ---  open and read a exist file \n\
+	vi     ---  open and write something to a file \n\
+	close  ---  close a file \n\
 	rm     ---  delete a exist file \n\
-	su     ---  switch current user \n\
-	clear  ---  clear the screen \n\
+	rm -r  ---  delete a directory \n\
 	format ---  format a exist filesystem \n\
-	exit   ---  exit this system \n\
-	rmdir  ---  delete a directory \n\
-	df     ---  show the useage of storage \n");
+	su     ---  switch current user \n\
+	exit   ---  exit this system \n");
 }
 
 //设置文件路径
@@ -689,7 +686,7 @@ void touch(void)
 			(inode_array[i].file_name == s2) && check(i))
 		{
 
-			if (inode_array[i].iparent == inum_cur])
+			if (inode_array[i].iparent == inum_cur)
 			{
 				printf("This file is exsit.\n");
 				return;
@@ -987,7 +984,7 @@ void quit()
 	scanf("%c", &choice);
 	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
-		exit(0);
+		exit(-1);
 }
 
 // 功能: 显示错误
