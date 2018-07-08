@@ -12,7 +12,7 @@ File_table file_array[FILENUM];	// 打开文件表数组
 char	image_name[10] = "hd.dat";	// 文件系统名称
 FILE		*fp;					// 打开文件指针
 
-									// "help", "cd", "dir", "mkdir", "touch", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
+// "help", "cd", "dir", "mkdir", "touch", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
 const string Commands[] = { "help", "cd", "ls", "mkdir", "touch", "open","cat", "vi", "close", "rm", "su", "clear", "format","exit","rmdir","df" };
 
 // bin/xx 给出进入bin即可
@@ -131,7 +131,6 @@ void format(void)
 	return;
 }
 
-
 void login() {
 	/*功能: 用户登陆，如果是新用户则创建用户*/
 	char *p;
@@ -142,7 +141,7 @@ void login() {
 	char choice;    //选择是否（y/n）
 	do {
 		printf("login:");
-		gets_s(user_name);
+		gets(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch()) {
@@ -176,7 +175,7 @@ void login() {
 				flag = 1;    //设置flag为1，表示密码错误，重新登陆 
 				fclose(fp);
 				break;
-			}
+			} 
 		}
 		if (flag == 0) {
 			printf("\nThis user is not exist.\n");
@@ -778,7 +777,6 @@ void cat() {
 }
 
 
-
 void vi() {
 
 	/*功能: 向文件中写入字符(write file1)*/
@@ -795,7 +793,6 @@ void vi() {
 	}*/
 
 	open(3, s2);
-
 	for (i = 0; i < FILENUM; i++)
 
 		if ((file_array[i].inum>0) &&
@@ -803,9 +800,7 @@ void vi() {
 			s2 == file_array[i].file_name) break;
 
 	if (i == FILENUM) {
-
 		cout << "Open " << s2 << " first.\n";
-
 		return;
 
 	}
@@ -982,7 +977,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets_s(temp);
+	gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(-1);
 }
