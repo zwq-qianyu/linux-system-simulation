@@ -868,8 +868,6 @@ void su(){
 	}while(flag);
 }
 
-
-
 //根据Inode节点号删存储
 void delet(int innum)
 {
