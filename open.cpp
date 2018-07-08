@@ -2,16 +2,16 @@
 Inode inode_array[INODENUM];	// i节点数组
 File_table file_array[FILENUM];	// 打开文件表数组
 
-void open(int mymode, char *argv1){
+void open(int mymode, string argv1){
 	/*功能: 打开当前目录下的文件(open file1)*/
 	int i, inum, mode, filenum, chk;
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv1))
+			(argv1 == file_array[i].file_name))
 			break;
 	if (i == INODENUM){
-		printf("This is no %s file...\n",argv1);
+		cout<<"This is no " + argv1 + " file...\n";
 		return;
 	}
 	inum = i;
