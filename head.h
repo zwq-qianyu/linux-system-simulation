@@ -58,7 +58,7 @@ void help(void);
 void cd(void);
 void dir(void);
 void mkdir(void);
-void creat(void);
+void touch(void);
 void open(int, string);
 void cat(void);
 void vi(void);
