@@ -5,6 +5,7 @@
 
 3. 因为变量定义的不同，导致使用到代表同一个数据的时候使用方式需要修改：
       （1）钟伍全负责的open函数中，第7行的`!strcmp(inode_array[i].file_name, argv1)`和第10行中的 argv1 无法得到正确的数据，
-      需要修改，第7行可以考虑使用`s2 == inode_array[i].file_name`；close函数中也有同样的问题。
+      需要修改，第7行可以考虑使用`s2 == inode_array[i].file_name`；close函数中也有同样的问题。------猜测：由于是在cat和vi函数中调用
+      open与close函数，并传递参数过去，所以只需对cat和vi函数进行修改即可（待修改实验确定）。
       
 
