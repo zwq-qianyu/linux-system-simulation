@@ -12,7 +12,7 @@ File_table file_array[FILENUM];	// 打开文件表数组
 char	image_name[10] = "hd.dat";	// 文件系统名称
 FILE		*fp;					// 打开文件指针
 
-// "help", "cd", "dir", "mkdir", "touch", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
+									// "help", "cd", "dir", "mkdir", "touch", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
 const string Commands[] = { "help", "cd", "ls", "mkdir", "touch", "open","cat", "vi", "close", "rm", "su", "clear", "format","exit","rmdir","df" };
 
 // bin/xx 给出进入bin即可
@@ -131,6 +131,7 @@ void format(void)
 	return;
 }
 
+
 void login() {
 	/*功能: 用户登陆，如果是新用户则创建用户*/
 	char *p;
@@ -141,7 +142,7 @@ void login() {
 	char choice;    //选择是否（y/n）
 	do {
 		printf("login:");
-		gets(user_name);
+		gets_s(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch()) {
@@ -175,7 +176,7 @@ void login() {
 				flag = 1;    //设置flag为1，表示密码错误，重新登陆 
 				fclose(fp);
 				break;
-			} 
+			}
 		}
 		if (flag == 0) {
 			printf("\nThis user is not exist.\n");
@@ -507,22 +508,24 @@ void release_blk(int num)
 	fclose(fp);
 }
 
-void help() {
+void help(){
 	/*功能: 显示帮助命令*/
 	printf("command: \n\
 	help   ---  show help menu \n\
-	clear  ---  clear the screen \n\
 	cd     ---  change directory \n\
-	mkdir  ---  make directory   \n\
+	clear  ---  clear the screen \n\
+	ls     ---  show all the files and directories in particular directory \n\
+	mkdir  ---  make a new directory   \n\
 	touch  ---  create a new file \n\
-	cat    ---  open and read a exist file \n\
-	vi     ---  open and write something to a file \n\
-	close  ---  close a file \n\
+	cat    ---  open and read an exist file \n\
+	vi     ---  open and write something to a particular file \n\
 	rm     ---  delete a exist file \n\
-	rm -r  ---  delete a directory \n\
-	format ---  format a exist filesystem \n\
 	su     ---  switch current user \n\
-	exit   ---  exit this system \n");
+	clear  ---  clear the screen \n\
+	format ---  format a exist filesystem \n\
+	exit   ---  exit this system \n\
+	rmdir  ---  delete a directory \n\
+	df     ---  show the useage of storage \n");
 }
 
 //设置文件路径
@@ -677,20 +680,33 @@ void mkdir(void)
 // 功能: 在当前目录下创建文件(creat file1)
 void touch(void)
 {
-	int i;
-	
-	for (i = 0; i < INODENUM; i++)
-	{
-		if ((inode_array[i].inum > 0) && (inode_array[i].type == '-') &&
-			(inode_array[i].file_name == s2) && check(i))
-		{
-
-			if (inode_array[i].iparent == inum_cur)
-			{
-				printf("This file is exsit.\n");
-				return;
-			}
+	if (s2.length() == 0) {
+		printf("Please input filename.\n");
+		return;
+	}
+	int i, temp_cur; string temps1, temps2;
+	if (s2.find('/') != -1) {
+		temps1 = s2.substr(0, s2.find_last_of('/') + 1);
+		temps2 = s2.substr(s2.find_last_of('/') + 1);
+		s2 = temps1;
+		temp_cur = readby();
+		if (temp_cur == -1) {
+			printf("No Such Directory\n");
 		}
+	}
+	else {
+		temps2 = s2;
+		temp_cur = inum_cur;
+	}
+	for (i = 0; i < INODENUM; i++)
+		if ((inode_array[i].inum > 0) &&
+			(inode_array[i].type == '-') &&
+			temps2 == inode_array[i].file_name&&
+			inode_array[i].iparent == temp_cur &&
+			!strcmp(inode_array[i].user_name, user.user_name)) break;
+	if(i!=INODENUM){
+		printf("There is same file\n");
+		return;
 	}
 	for (i = 0; i < INODENUM; i++)
 		if (inode_array[i].inum < 0) break;
@@ -700,10 +716,10 @@ void touch(void)
 		exit(-1);
 	}
 	inode_array[i].inum = i;
-	strcpy(inode_array[i].file_name, s2.data());
+	strcpy( inode_array[i].file_name, temps2.data());
 	inode_array[i].type = '-';
 	strcpy(inode_array[i].user_name, user.user_name);
-	inode_array[i].iparent = inum_cur;
+	inode_array[i].iparent = temp_cur;
 	inode_array[i].length = 0;
 	save_inode(i);
 }
@@ -777,6 +793,7 @@ void cat() {
 }
 
 
+
 void vi() {
 
 	/*功能: 向文件中写入字符(write file1)*/
@@ -793,6 +810,7 @@ void vi() {
 	}*/
 
 	open(3, s2);
+
 	for (i = 0; i < FILENUM; i++)
 
 		if ((file_array[i].inum>0) &&
@@ -800,7 +818,9 @@ void vi() {
 			s2 == file_array[i].file_name) break;
 
 	if (i == FILENUM) {
+
 		cout << "Open " << s2 << " first.\n";
+
 		return;
 
 	}
@@ -977,7 +997,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets(temp);
+	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(-1);
 }
