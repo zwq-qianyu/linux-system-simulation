@@ -18,37 +18,43 @@ void format(void)
 	FILE  *fp;
 	int   i;
 	Inode inode;
-	printf("Will be to format filesystem...\n");
-	printf("WARNING:ALL DATA ON THIS FILESYSTEM WILL BE LOST!\n");
-	printf("Proceed with Format(Y/N)?");
+	printf("FileSystem will be  format \n");
+	printf("All the data will lost!!!\n");
+	printf("Are you sure format the fileSystem?(Y/N)?");
 	scanf("%c", &choice);
-	gets_s(temp);
+	gets_s(temp,1024);   //                                          更改
 	if ((choice == 'y') || (choice == 'Y'))
 	{
-		if ((fp = fopen(image_name, "w+b")) == NULL)
+		fp = fopen(image_name, "w+b");
+		if (fp== NULL)
 		{
-			printf("Can't create file %s\n", image_name);
+			printf("Can't open  file %s\n", image_name);
+			getch();
 			exit(-1);
 		}
+		//成功打开后，位图数组置0
 		for (i = 0; i < BLKSIZE; i++)
-			fputc('0', fp);
+			fputc('0', fp);   //
 		inode.inum = 0;
-		strcpy(inode.file_name, "/");
-		inode.type = 'd';
-		strcpy(inode.user_name, "all");
 		inode.iparent = 0;
 		inode.length = 0;
 		inode.address[0] = -1;
 		inode.address[1] = -1;
+		inode.type = 'd';
+		strcpy(inode.file_name, "/");
+		strcpy(inode.user_name, "all");
 		fwrite(&inode, sizeof(Inode), 1, fp);
 		inode.inum = -1;
+		//对32个节点进行格式化
 		for (i = 0; i < 31; i++)
 			fwrite(&inode, sizeof(Inode), 1, fp);
+		//数据块进行格式化
 		for (i = 0; i < BLKNUM*BLKSIZE; i++)
 			fputc('\0', fp);
 		fclose(fp);
-		// 打开文件user.txt
-		if ((fp = fopen("user.txt", "w+")) == NULL)
+		//清除用户信息
+		fp = fopen("user.txt", "w+");
+		if (fp==NULL)
 		{
 			printf("Can't create file %s\n", "user.txt");
 			exit(-1);
@@ -58,6 +64,8 @@ void format(void)
 	}
 	return;
 }
+	
+		
 // 功能: 用户登陆，如果是新用户则创建用户
 void login(void)
 {
@@ -134,6 +142,8 @@ void login(void)
 void init(void)
 {
 	int   i;
+	inum_cur = 0;
+	// 当前目录为根目录
 	if ((fp = fopen(image_name, "r+b")) == NULL)
 	{
 		printf("Can't open file %s.\n", image_name);
@@ -147,8 +157,8 @@ void init(void)
 	for (i = 0; i < INODENUM; i++)
 		fread(&inode_array[i], sizeof(Inode), 1, fp);
 	// 显示i节点
-	// 当前目录为根目录
-	inum_cur = 0;
+	
+	
 	// 初始化打开文件表
 	for (i = 0; i < FILENUM; i++)
 		file_array[i].inum = -1;
@@ -160,7 +170,7 @@ int analyse(char *str)
 	int  i;
 	char temp[20];
 	char *ptr_char;
-	const char  *syscmd[] = { "help", "cd", "dir", "mkdir", "creat", "open", "read", "write", "close", "delete", "logout", "clear","format","quit","rd" };
+	const char  *syscmd[] = { "help", "cd", "dir", "mkdir", "touch", "open", "read", "write", "close", "delete", "logout", "clear","format","quit","rd" };
 	argc = 0;
 	for (i = 0, ptr_char = str; *ptr_char != '\0'; ptr_char++)
 	{
@@ -471,10 +481,10 @@ void creat(void)
 	for (i = 0; i < INODENUM; i++)
 	{
 		if ((inode_array[i].inum > 0) && (inode_array[i].type == '-') &&
-			!strcmp(inode_array[i].file_name, argv[1])&&(inode_array[i].user_name==user.user_name))
+			!strcmp(inode_array[i].file_name, argv[1])&&check(i))
 		{   
 			
-			if (inode_array[i].inum == inum_cur)
+			if (inode_array[i].inum ==inode_array[inum_cur].inum)
 			{
 				printf("This file is exsit.\n");
 				return;
@@ -790,7 +800,7 @@ void command(void)
 			mkdir();
 			break;
 		case 4:
-			creat();
+			touch();
 			break;
 		case 5:
 			open();
