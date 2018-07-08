@@ -1,21 +1,24 @@
 #include "head.h"
-int argc;		// 用户命令的参数个数
-char *argv[5];		// 用户命令的参数
+//int argc;		// 用户命令的参数个数
+//char *argv[5];		// 用户命令的参数
 Inode inode_array[INODENUM];	// i节点数组
 File_table file_array[FILENUM];	// 打开文件表数组
 char temp[2 * BLKSIZE];	// 缓冲区
 
+vector<string>vc_of_str;    // 用户命令的参数个数
+string  s1, s2;            // 用户命令的参数
+
 void vi(){
 	/*功能: 向文件中写入字符(write file1)*/
 	int i, inum, length;
-	if (argc != 2){
+	/*if (argc != 2){
 		printf("Command write must have one args. \n");
 		return;
-	}
-	open(3, argv[1]);
+	}*/
+	open(3, s2);
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum>0) &&
-			!strcmp(file_array[i].file_name, argv[1])) break;
+			(s2 == file_array[i].file_name)) break;
 	inum = file_array[i].inum;
 	//printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
 	if (inode_array[inum].length == 0){
@@ -38,9 +41,10 @@ void vi(){
 		for(int i=0;i<1024;i++){
 			temp[i] = str[i];
 		}
+		//printf(temp);
 		write_blk(inum);
 	}
 	else
 		printf("This file has content,it can't be written.\n");
-	close(argv[1]);
+	close(s2);
 }
