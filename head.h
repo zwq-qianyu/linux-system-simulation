@@ -65,3 +65,6 @@ void logout(void);
 void command(void);
 void rd();
 void quit();
+void clear(); //
+void errcmd();//
+void format();//
