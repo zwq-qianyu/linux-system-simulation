@@ -1,4 +1,4 @@
-//#include "stdafx.h"
+#include "stdafx.h"
 #include "head.h"
 char		choice;
 vector<string>vc_of_str;
@@ -13,7 +13,7 @@ char	image_name[10] = "hd.dat";	// 文件系统名称
 FILE		*fp;					// 打开文件指针
 
 // "help", "cd", "dir", "mkdir", "creat", "open","read", "write", "close", "delete", "logout", "clear", "format","quit","rd"
-const string Commands[] = { "man", "cd", "ls", "mkdir", "creat", "open","read", "write", "close", "rmfile", "sudo", "clear", "format","df","rmdir" };
+const string Commands[] = { "man", "cd", "ls", "mkdir", "touch", "open","read", "write", "close", "rm", "sudo", "clear", "format","quit","rmdir","df" };
 
 // bin/xx 给出进入bin即可
 int readby() {	//根据当前目录和第二个参数确定转过去的目录
@@ -87,7 +87,7 @@ void format(void)
 	printf("WARNING:ALL DATA ON THIS FILESYSTEM WILL BE LOST!\n");
 	printf("Proceed with Format(Y/N)?");
 	scanf("%c", &choice);
-	gets(temp);
+	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		if ((fp = fopen(image_name, "w+b")) == NULL)
@@ -135,7 +135,7 @@ void login(void)
 	do
 	{
 		printf("login:");
-		gets(user_name);
+		gets_s(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch())
@@ -183,7 +183,7 @@ void login(void)
 	{
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		gets(temp);
+		gets_s(temp);
 		if ((choice == 'y') || (choice == 'Y'))
 		{
 			strcpy(user.user_name, user_name);
@@ -266,16 +266,25 @@ int analyse()
 	int tabcount = 0;
 	int res = 0;
 	while (1) {
-		s1 = s.substr(0, s.find_first_of(' '));
+		s1 = s;
 		if(s.find(' ')==-1)s2 = "";
-		else { 
-			s2 = s.substr(s.find_first_of(' ') + 1);
+		else {
+			while (s1.length()>0 && s1[s1.length() - 1] == ' ') {
+				s1 = s1.substr(0, s1.length() - 1);
+			}
+			while (s1.length()>0 && s1[0] == ' ') {
+				s1 = s1.substr(1);
+			}
+			if (s1.find(' ') == -1)s2 = "";
+			else
+				s2 = s1.substr(s1.find_first_of(' ') + 1);
 			while (s2.length()>0 && s2[s2.length() - 1] == ' ') {
 				s2 = s2.substr(0, s2.length() - 1);
 			}
 			while (s2.length()>0&&s2[0] == ' ') {
 				s2 = s2.substr(1);
-			} 
+			}
+			s1 = s1.substr(0, s1.find_first_of(' '));
 		}
 		int ch = _getch();
 		if (ch == 8) {				//退格
@@ -283,11 +292,11 @@ int analyse()
 				printf("%c", 8);
 				printf(" ");
 				printf("%c", 8);
-				s=s.substr(0, s.length()-1);
+				s=s.substr(0,s.length()-1);
 			}
 		}
 		else if (ch == 13) {		//回车
-			for (res = 0; res < 15; res++) {
+			for (res = 0; res < 16; res++) {
 				if (s1 == Commands[res])break;
 			}
 			break;
@@ -359,6 +368,9 @@ int analyse()
 		else {
 			tabcount = 0;
 		}
+	}
+	if (s1 == "") {
+		return -1;
 	}
 	printf("\n");
 	return res;
@@ -544,8 +556,9 @@ void dir(void)
 		temp_cur = inum_cur;
 		}
 	else {
+		if (s2[s2.length() - 1] != '/')s2 += '/';
 		temp_cur = readby();
-		if (temp_cur == -1) {
+		if (temp_cur == -1||inode_array[temp_cur].type!='d') {
 			cout << "No Such Directory" << endl;
 			return;
 		}
@@ -569,12 +582,44 @@ void dir(void)
 		}
 }
 
+void rm(int inode) {
+	int i;
+	for (i = 0; i < INODENUM; i++) {
+		if (inode_array[i].iparent == inode && !strcmp(inode_array[i].user_name, user.user_name)) {
+			if (inode_array[i].type == 'd')rm(i);
+			else delet(i);
+		}
+	}
+	delet(inode);
+}
+
+//rmdir dir或rmdir dir/a/b
 // 功能: 删除目录树(rd dir1)
-void rd()
+void rmdir()
 {
+	if (s2.length() == 0) {
+		printf("No Such Directory\n");
+		return;
+	}
 	if (s2[s2.length() - 1] != '/')s2 += '/';
 	int temp_cur=readby();
-
+	if (temp_cur == -1)printf("No Such Directory\n");
+	else {
+		if (inode_array[temp_cur].type != 'd') {
+			printf("That's A File!\n");
+		}
+		else {
+			int temp = inode_array[inum_cur].iparent;
+			while (temp != 0) {
+				if (temp == temp_cur||temp_cur==0) {
+					printf("Can't delete your father directory\n");
+					return;
+				}
+				temp = inode_array[temp].iparent;
+			}
+			rm(temp_cur);
+		}
+	}
 	return;
 }
 
@@ -659,7 +704,7 @@ void open()
 	inum = i;
 	printf("Please input open mode:(1: read, 2: write, 3: read and write):");
 	scanf("%d", &mode);
-	gets(temp);
+	gets_s(temp);
 	if ((mode < 1) || (mode > 3))
 	{
 		printf("Open mode is wrong.\n");
@@ -707,7 +752,7 @@ void read()
 	{
 		printf("The start position:");
 		scanf("%d", &start);
-		gets(temp);
+		gets_s(temp);
 		if ((start<0) || (start >= inode_array[inum].length))
 		{
 			printf("Start position is wrong.\n");
@@ -715,7 +760,7 @@ void read()
 		}
 		printf("The bytes you want to read:");
 		scanf("%d", &num);
-		gets(temp);
+		gets_s(temp);
 		if (num <= 0)
 		{
 			printf("The num you want to read is wrong.\n");
@@ -751,7 +796,7 @@ void write()
 	{
 		printf("The length you want to write(0-1024):");
 		scanf("%d", &length);
-		gets(temp);
+		gets_s(temp);
 		if ((length < 0) && (length >1024))
 		{
 			printf("Input wrong.\n");
@@ -763,7 +808,7 @@ void write()
 			inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
 		printf("Input the data(Enter to end):\n");
-		gets(temp);
+		gets_s(temp);
 		write_blk(inum);
 	}
 	else
@@ -789,7 +834,7 @@ void close(void)
 	}
 }
 
-//删除目录树
+//根据Inode节点号删存储
 void delet(int innum)
 {
 
@@ -803,36 +848,39 @@ void delet(int innum)
 	save_inode(innum);
 }
 
-// 功能: 删除文件(delete file1)
-void del(void)
+// 功能: 删除文件
+void rmfile(void)
 {
-	int i;
+	if (s2.length() == 0) {
+		printf("This file doesn't exist.\n");
+		return;
+	}
+	int i, temp_cur; string temps1, temps2;
+	if (s2.find('/') != -1) {
+		temps1 = s2.substr(0, s2.find_last_of('/') + 1);
+		temps2 = s2.substr(s2.find_last_of('/') + 1);
+		s2 = temps1;
+		temp_cur = readby();
+	}
+	else {
+		temps2 = s2;
+		temp_cur = inum_cur;
+	}
 	for (i = 0; i < INODENUM; i++)
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
-			s2 == inode_array[i].file_name) break;
+			temps2 == inode_array[i].file_name&&
+			inode_array[i].iparent==temp_cur&&
+			!strcmp(inode_array[i].user_name, user.user_name)) break;
 	if (i == INODENUM)
 	{
 		printf("This file doesn't exist.\n");
 		return;
 	}
-	if (!strcmp(inode_array[i].user_name, user.user_name))
-	{
-		printf("This file is not your !\n");
-		return;
-	}
-	/*inode_array[i].inum = -1;
-	if(inode_array[i].length > 0)
-	{
-	release_blk(inode_array[i].address[0]);
-	if(inode_array[i].length > 512)
-	release_blk(inode_array[i].address[1]);
-	}
-	save_inode(i);*/
 	delet(i);
 }
-// 功能: 退出当前用户(logout)
 
+// 功能: 退出当前用户(logout)
 void logout()
 {
 	login();
@@ -845,7 +893,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets(temp);
+	gets_s(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(0);
 }
@@ -874,6 +922,9 @@ void command(void)
 		pathset();
 		switch (analyse())
 		{
+		case -1:
+			printf("\n");
+			break;
 		case 0:
 			help();
 			break;
@@ -902,7 +953,7 @@ void command(void)
 			close();
 			break;
 		case 9:
-			del();
+			rmfile();
 			break;
 		case 10:
 			logout();
@@ -920,15 +971,31 @@ void command(void)
 			quit();
 			break;
 		case 14:
-			rd();
+			rmdir();
 			break;
 		case 15:
+			df();
+			break;
+		case 16:
 			errcmd();
 			break;
 		default:
 			break;
 		}
 	} while (1);
+}
+
+
+void df() {
+	int count_inode = 0, count_mem = 0;
+	for (int i = 0; i < INODENUM; i++) {
+		if (inode_array[i].inum > 0)count_inode++;
+	}
+	for (int i = 0; i < BLKNUM; i++) {
+		if (bitmap[i] == '1')count_mem++;
+	}
+	cout << "Inode使用:" << count_inode << "/" << INODENUM << endl;
+	cout << "内存使用:" << count_mem << "/" << BLKNUM << endl;
 }
 
 // 主函数
