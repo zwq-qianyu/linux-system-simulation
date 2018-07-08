@@ -4,6 +4,7 @@
 2. 钟伍全使用的纯C，鲁恒代码中含有C++语法等
 
 3. 因为变量定义的不同，导致使用到代表同一个数据的时候使用方式需要修改：
-      （1）钟伍全负责的open函数中，第7行的`!strcmp(inode_array[i].file_name, argv1)`和第10行中的 argv1 无法得到正确的数据，需要修改，第7行可以考虑使用`s2 == inode_array[i].file_name`；
+      （1）钟伍全负责的open函数中，第7行的`!strcmp(inode_array[i].file_name, argv1)`和第10行中的 argv1 无法得到正确的数据，
+      需要修改，第7行可以考虑使用`s2 == inode_array[i].file_name`；close函数中也有同样的问题。
       
 
