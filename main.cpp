@@ -87,7 +87,7 @@ void format(void)
 	printf("All the data will lost!!!\n");
 	printf("Are you sure format the fileSystem?(Y/N)?");
 	scanf("%c", &choice);
-	gets_s(temp, 1024);   //                                          更改
+	//gets(temp, 1024);   //                                          更改
 	if ((choice == 'y') || (choice == 'Y'))
 	{
 		fp = fopen(image_name, "w+b");
@@ -142,7 +142,7 @@ void login() {
 	char choice;    //选择是否（y/n）
 	do {
 		printf("login:");
-		gets_s(user_name);
+		gets(user_name);
 		printf("password:");
 		p = password;
 		while (*p = _getch()) {
@@ -188,7 +188,6 @@ void login() {
 	if (flag == 0) {
 		printf("\nDo you want to creat a new user?(y/n):");
 		scanf("%c", &choice);
-		//gets_s(temp);
 		if ((choice == 'y') || (choice == 'Y')) {
 			strcpy(user.user_name, user_name);
 			strcpy(user.password, password);
@@ -453,9 +452,9 @@ void read_blk(int num)
 		temp[i] = ch;
 		ch = fgetc(fp);
 	}
-	if (i >= 512)
+	if (i > 512)
 	{
-		fseek(fp, 1536 + add1 * BLKSIZE, SEEK_SET);
+		fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
 		ch = fgetc(fp);
 		for (; (i < len) && (ch != '\0'); i++)
 		{
@@ -795,84 +794,62 @@ void cat() {
 
 
 void vi() {
-
 	/*功能: 向文件中写入字符(write file1)*/
-
 	int i, inum, length;
-	length = 0;
-
+	//length = 0;
 	/*if (argc != 2){
-
-	printf("Command write must have one args. \n");
-
-	return;
-
+		printf("Command write must have one args. \n");
+		return;
 	}*/
-
 	open(3, s2);
-
 	for (i = 0; i < FILENUM; i++)
-
 		if ((file_array[i].inum>0) &&
-
-			s2 == file_array[i].file_name) break;
-
-	if (i == FILENUM) {
-
-		cout << "Open " << s2 << " first.\n";
-
+			s2==file_array[i].file_name) break;
+	if (i == FILENUM){
+		cout << "Open " << s2 << " false.\n";
 		return;
-
 	}
-
 	inum = file_array[i].inum;
-
-	printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
-
-	if (inode_array[inum].length == 0) {
-
-		/*printf("The length you want to write(0-1024):");
-
+	//printf("The length of %s:%d\n", inode_array[inum].file_name, inode_array[inum].length);
+	if (inode_array[inum].length == 0){
+		printf("The length you want to write(0-1024):");
 		scanf("%d", &length);
-
 		gets(temp);
-
-		if ((length < 0) && (length >1024))
-
-		{
-
-		printf("Input wrong.\n");
-
-		return;
-
-		}*/
-
-		inode_array[inum].length = 512;
-
+		if ((length < 0) && (length >1024)){
+			printf("You can't creat a file which data less than 0 byte or more than 1024 bytes.'.\n");
+			return;
+		}
+		inode_array[inum].length = length;
 		inode_array[inum].address[0] = get_blknum();
-
 		if (length > 512)
-
 			inode_array[inum].address[1] = get_blknum();
-
 		save_inode(inum);
-
 		printf("Input the data(Enter to end):\n");
-
-		gets_s(temp);
-
-		//inode_array[inum].length = temp.length();
-
+		gets(temp);
 		write_blk(inum);
-
 	}
-
-	else
-
-		printf("This file can't be written.\n");
-
+	else{
+		printf("Are you sure to write this file? Data in it will all be deleted.(y/n):");
+		scanf("%c", &choice);
+		if ((choice == 'y') || (choice == 'Y')){
+			printf("The length you want to write(0-1024):");
+			scanf("%d", &length);
+			gets(temp);
+			if ((length < 0) && (length >1024)){
+				printf("You can't creat a file which data less than 0 byte or more than 1024 bytes.'.\n");
+				return;
+			}
+			inode_array[inum].length = length;
+			inode_array[inum].address[0] = get_blknum();
+			if (length > 512)
+				inode_array[inum].address[1] = get_blknum();
+			save_inode(inum);
+			printf("Input the data(Enter to end):\n");
+			gets(temp);
+			write_blk(inum);
+		}
+	}
 	close(s2);
-
 }
 
 void close(string argv1) {
@@ -897,10 +874,10 @@ void su() {
 	char password[10];
 	char file_name[10] = "user.txt";
 	fp = fopen(file_name, "r");           //初始化指针，将文件系统的指针指向文件系统的首端(以只读方式打开文件)
-										  /*if (argc != 2){
-										  printf("command su must have one object. \n");
-										  return;
-										  }*/
+	/*if (argc != 2){
+		printf("command su must have one object. \n");
+		return;
+	}*/
 	do {
 		user_name = s2;
 		printf("password:");
@@ -997,7 +974,7 @@ void quit()
 	char choice;
 	printf("Do you want to exist(y/n):");
 	scanf("%c", &choice);
-	gets_s(temp);
+	gets(temp);
 	if ((choice == 'y') || (choice == 'Y'))
 		exit(-1);
 }
