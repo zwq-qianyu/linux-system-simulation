@@ -1,0 +1,22 @@
+void write_blk(int num){
+	/*功能: 将temp的内容输入hd的数据区*/ 
+	int  i, len;
+	int  add0, add1;
+	add0 = inode_array[num].address[0];
+	len = inode_array[num].length;
+	if ((fp = fopen(image_name, "r+b")) == NULL){
+		printf("Can't open file %s.\n", image_name);
+		exit(-1);
+	}
+	fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
+	for (i = 0; (i<len) && (temp[i] != '\0') && (i < 512); i++)
+		fputc(temp[i], fp);
+	if (i == 512){
+		add1 = inode_array[num].address[1];
+		fseek(fp, 1536 + add1 * BLKSIZE, SEEK_SET);
+		for (; (i < len) && (temp[i] != '\0'); i++)
+			fputc(temp[i], fp);
+	}
+	fputc('\0', fp);
+	fclose(fp);
+}
