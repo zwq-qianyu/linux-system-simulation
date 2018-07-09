@@ -831,7 +831,7 @@ void vi() {
 		string str;
 		while((c=getchar())!='#'){
 			if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
-				c = '0x0a'; //将输入的回车键转换成换行符
+				c = '\0'; //将输入的回车键转换成换行符
 			}
 			str = str + c;	
 		}
@@ -864,7 +864,7 @@ void vi() {
 			string str;
 			while((c=getchar())!='#'){
 				if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
-					c = '0x0a'; //将输入的回车键转换成换行符
+					c = '\0'; //将输入的回车键转换成换行符
 				}
 				str = str + c;	
 			}
