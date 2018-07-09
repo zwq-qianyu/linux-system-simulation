@@ -1,0 +1,20 @@
+int get_blknum(void){
+	/*功能: 申请一个数据块*/ 
+	int i;
+	for (i = 0; i < BLKNUM; i++)
+		if (bitmap[i] == '0') break;
+	// 未找到空闲数据块
+	if (i == BLKNUM){
+		printf("Data area is full.\n");
+		exit(-1);
+	}
+	bitmap[i] = '1';
+	if ((fp = fopen(image_name, "r+b")) == NULL){
+		printf("Can't open file %s\n", image_name);
+		exit(-1);
+	}
+	fseek(fp, i, SEEK_SET);
+	fputc('1', fp);
+	fclose(fp);
+	return i;
+}
