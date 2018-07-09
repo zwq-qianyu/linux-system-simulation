@@ -1,0 +1,10 @@
+void save_inode(int num){
+	/*功能: 将num号i节点保存到hd.dat*/ 
+	if ((fp = fopen(image_name, "r+b")) == NULL){
+		printf("Can't open file %s\n", image_name);
+		exit(-1);
+	}
+	fseek(fp, 512 + num * sizeof(Inode), SEEK_SET);
+	fwrite(&inode_array[num], sizeof(Inode), 1, fp);
+	fclose(fp);
+}
