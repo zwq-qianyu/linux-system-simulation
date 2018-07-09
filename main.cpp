@@ -682,6 +682,7 @@ void touch(void)
 		temp_cur = readby();
 		if (temp_cur == -1) {
 			printf("No Such Directory\n");
+			return;
 		}
 	}
 	else {
