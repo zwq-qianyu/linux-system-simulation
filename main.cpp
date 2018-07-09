@@ -393,11 +393,10 @@ int analyse()
 	return res;
 }
 
-// 功能: 将num号i节点保存到hd.dat
-void save_inode(int num)
-{
-	if ((fp = fopen(image_name, "r+b")) == NULL)
-	{
+
+void save_inode(int num){
+	/*功能: 将num号i节点保存到hd.dat*/ 
+	if ((fp = fopen(image_name, "r+b")) == NULL){
 		printf("Can't open file %s\n", image_name);
 		exit(-1);
 	}
@@ -406,21 +405,19 @@ void save_inode(int num)
 	fclose(fp);
 }
 
-// 功能: 申请一个数据块
-int get_blknum(void)
-{
+
+int get_blknum(void){
+	/*功能: 申请一个数据块*/ 
 	int i;
 	for (i = 0; i < BLKNUM; i++)
 		if (bitmap[i] == '0') break;
 	// 未找到空闲数据块
-	if (i == BLKNUM)
-	{
+	if (i == BLKNUM){
 		printf("Data area is full.\n");
 		exit(-1);
 	}
 	bitmap[i] = '1';
-	if ((fp = fopen(image_name, "r+b")) == NULL)
-	{
+	if ((fp = fopen(image_name, "r+b")) == NULL){
 		printf("Can't open file %s\n", image_name);
 		exit(-1);
 	}
@@ -430,9 +427,9 @@ int get_blknum(void)
 	return i;
 }
 
-// 功能: 将i节点号为num的文件读入temp 
-void read_blk(int num)
-{
+
+void read_blk(int num){
+	/*功能: 将i节点号为num的文件读入temp */ 
 	int  i, len;
 	char ch;
 	int  add0, add1;
@@ -440,24 +437,20 @@ void read_blk(int num)
 	add0 = inode_array[num].address[0];
 	if (len > 512)
 		add1 = inode_array[num].address[1];
-	if ((fp = fopen(image_name, "r+b")) == NULL)
-	{
+	if ((fp = fopen(image_name, "r+b")) == NULL){
 		printf("Can't open file %s.\n", image_name);
 		exit(-1);
 	}
 	fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
 	ch = fgetc(fp);
-	for (i = 0; (i < len) && (ch != '\0') && (i < 512); i++)
-	{
+	for (i = 0; (i < len) && (ch != '\0') && (i < 512); i++){
 		temp[i] = ch;
 		ch = fgetc(fp);
 	}
-	if (i > 512)
-	{
+	if (i > 512){
 		fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
 		ch = fgetc(fp);
-		for (; (i < len) && (ch != '\0'); i++)
-		{
+		for (; (i < len) && (ch != '\0'); i++){
 			temp[i] = ch;
 			ch = fgetc(fp);
 		}
@@ -466,23 +459,21 @@ void read_blk(int num)
 	fclose(fp);
 }
 
-// 功能: 将temp的内容输入hd的数据区
-void write_blk(int num)
-{
+
+void write_blk(int num){
+	/*功能: 将temp的内容输入hd的数据区*/ 
 	int  i, len;
 	int  add0, add1;
 	add0 = inode_array[num].address[0];
 	len = inode_array[num].length;
-	if ((fp = fopen(image_name, "r+b")) == NULL)
-	{
+	if ((fp = fopen(image_name, "r+b")) == NULL){
 		printf("Can't open file %s.\n", image_name);
 		exit(-1);
 	}
 	fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
 	for (i = 0; (i<len) && (temp[i] != '\0') && (i < 512); i++)
 		fputc(temp[i], fp);
-	if (i == 512)
-	{
+	if (i == 512){
 		add1 = inode_array[num].address[1];
 		fseek(fp, 1536 + add1 * BLKSIZE, SEEK_SET);
 		for (; (i < len) && (temp[i] != '\0'); i++)
@@ -744,7 +735,8 @@ void open(int mymode, string argv1) {
 		if ((inode_array[i].inum > 0) &&
 			(inode_array[i].type == '-') &&
 			argv1 == inode_array[i].file_name &&
-			!strcmp(inode_array[i].user_name, user.user_name))
+			!strcmp(inode_array[i].user_name, user.user_name) &&
+			inode_array[i].iparent == inum_cur)     //判断是否在当前目录下 
 			break;
 	if (i == INODENUM) {
 		cout << "This is no " + argv1 + " file...\n";
@@ -802,6 +794,7 @@ void vi() {
 		return;
 	}*/
 	open(3, s2);
+	
 	for (i = 0; i < FILENUM; i++)
 		if ((file_array[i].inum>0) &&
 			s2==file_array[i].file_name) break;
