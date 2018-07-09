@@ -1,0 +1,30 @@
+void read_blk(int num){
+	/*功能: 将i节点号为num的文件读入temp */ 
+	int  i, len;
+	char ch;
+	int  add0, add1;
+	len = inode_array[num].length;
+	add0 = inode_array[num].address[0];
+	if (len > 512)
+		add1 = inode_array[num].address[1];
+	if ((fp = fopen(image_name, "r+b")) == NULL){
+		printf("Can't open file %s.\n", image_name);
+		exit(-1);
+	}
+	fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
+	ch = fgetc(fp);
+	for (i = 0; (i < len) && (ch != '\0') && (i < 512); i++){
+		temp[i] = ch;
+		ch = fgetc(fp);
+	}
+	if (i > 512){
+		fseek(fp, 1536 + add0 * BLKSIZE, SEEK_SET);
+		ch = fgetc(fp);
+		for (; (i < len) && (ch != '\0'); i++){
+			temp[i] = ch;
+			ch = fgetc(fp);
+		}
+	}
+	temp[i] = '\0';
+	fclose(fp);
+}
