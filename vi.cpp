@@ -30,7 +30,21 @@ void vi() {
 			inode_array[inum].address[1] = get_blknum();
 		save_inode(inum);
 		printf("Input the data(Enter to end):\n");
-		gets(temp);
+		//gets(temp);
+		
+		char c;
+		char *m;
+		string str;
+		while((c=getchar())!='#'){
+			if (c == 0x0d){ //当输入回车键时，0x0d为回车键的ASCII码
+				c = '0x0a'; //将输入的回车键转换成换行符
+			}
+			str = str + gets(m) +"\n";	
+		}
+		for(int i=0;i<1024;i++){
+			temp[i] = str[i];
+		}
+
 		write_blk(inum);
 	}
 	else{
@@ -55,4 +69,5 @@ void vi() {
 		}
 	}
 	close(s2);
+	init();   //需要初始化一下，否则文件有一个文件名会出错 
 }
