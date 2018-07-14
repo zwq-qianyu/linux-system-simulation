@@ -1093,7 +1093,7 @@ void command(void)
 			rmfile();
 			break;
 		case 10:
-			logout();
+			su();
 			break;
 		case 11:
 			system("cls");
